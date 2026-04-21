@@ -243,7 +243,7 @@ set-histogram-num-bars 40
       </pen>
     </plot>
     <slider x="17" step="0.1" y="222" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.8" variable="confidence-threshold"></slider>
-    <chooser x="17" y="150" height="60" variable="influence-type" current="2" width="250" display="influence-type">
+    <chooser x="17" y="150" height="60" variable="influence-type" current="1" width="250" display="influence-type">
       <choice type="string" value="positive"></choice>
       <choice type="string" value="BC"></choice>
       <choice type="string" value="negative"></choice>
@@ -1265,23 +1265,32 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
       </indicator>
     </shape>
   </linkShapes>
+  <systemDynamics dt="1.0"></systemDynamics>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
   <experiments>
-    <experiment name="experimento-1-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+    <experiment name="patron-edad-positiva" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
       <setup>setup</setup>
       <go>go</go>
-      <runMetricsCondition>ticks = 1</runMetricsCondition>
       <metrics>
         <metric>pref-A</metric>
-        <metric>pref-B</metric>
+        <metric>percentage-A</metric>
+        <metric>male-pref-A</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-pref-A</metric>
+        <metric>female-percentage-A</metric>
       </metrics>
       <constants>
-        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.1"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="1"></value>
+          <value value="20"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="export-opinions?">
+          <value value="false"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="confidence-threshold">
           <value value="0"></value>
@@ -1291,428 +1300,27 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
         </enumeratedValueSet>
       </constants>
     </experiment>
-    <experiment name="experimento-2-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.53"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="2" step="1" last="1070"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="0"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-2-positiva-5-agents" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+    <experiment name="patron-edad-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
       <setup>setup</setup>
       <go>go</go>
       <metrics>
         <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.53"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="0"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-1-negativa" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;negative&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-2-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.42"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="100"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;negative&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-3-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.42"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="8"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0" step="0.1" last="2"></steppedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;negative&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-1-BC" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-2-BC" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.58"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="50"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="experimento-3-BC" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.58"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="7"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
-        <enumeratedValueSet variable="spatial-interactions?">
-          <value value="false"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="positive-influence-convergence" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <runMetricsCondition>ticks = 1000</runMetricsCondition>
-      <metrics>
-        <metric>mean [opinion] of patches</metric>
-        <metric>standard-deviation [opinion] of patches</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="1000"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="negative-confidence-threshold" repetitions="1" sequentialRunOrder="true" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <runMetricsCondition>ticks mod 5 = 0</runMetricsCondition>
-      <metrics>
-        <metric>[opinion] of patches</metric>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="1000"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="50"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;negative&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="BC-confidence-threshold" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <runMetricsCondition>ticks mod 5 = 0</runMetricsCondition>
-      <metrics>
-        <metric>[opinion] of patches</metric>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="1000"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="learning-rate">
-          <value value="0.5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="50"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="positive-convergence-time" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <exitCondition><![CDATA[(standard-deviation [opinion] of patches) < 0.00001]]></exitCondition>
-      <metrics>
-        <metric>ticks</metric>
-        <metric>standard-deviation [opinion] of patches</metric>
-        <metric>mean [opinion] of patches</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="50000"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="negativa-parameters-error" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
+        <metric>percentage-A</metric>
+        <metric>male-pref-A</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-pref-A</metric>
+        <metric>female-percentage-A</metric>
       </metrics>
       <constants>
         <enumeratedValueSet variable="total-ticks">
           <value value="260"></value>
         </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;negative&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="BC-parameters-error" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="260"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="positiva-parameters-error" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="260"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
-        <enumeratedValueSet variable="confidence-threshold">
-          <value value="1"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="BC_final_preference" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="2000"></value>
-        </enumeratedValueSet>
         <enumeratedValueSet variable="learning-rate">
-          <value value="0.5"></value>
-        </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
+          <value value="0.1"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="agents-updated-per-tick">
-          <value value="50"></value>
+          <value value="20"></value>
         </enumeratedValueSet>
-        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="influence-type">
-          <value value="&quot;BC&quot;"></value>
-        </enumeratedValueSet>
-      </constants>
-    </experiment>
-    <experiment name="positive-pref-evolution" repetitions="10" sequentialRunOrder="true" runMetricsEveryStep="true">
-      <setup>setup</setup>
-      <go>go</go>
-      <metrics>
-        <metric>pref-A</metric>
-        <metric>pref-B</metric>
-      </metrics>
-      <constants>
-        <enumeratedValueSet variable="total-ticks">
-          <value value="1000"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="50"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="10" step="10" last="50"></steppedValueSet>
         <enumeratedValueSet variable="export-opinions?">
           <value value="false"></value>
         </enumeratedValueSet>
@@ -1720,13 +1328,41 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
           <value value="1"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="influence-type">
-          <value value="&quot;positive&quot;"></value>
+          <value value="&quot;negative&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="patron-edad-BC" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>percentage-A</metric>
+        <metric>male-pref-A</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-pref-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="30"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="export-opinions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0.8"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;BC&quot;"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>
   </experiments>
-  <systemDynamics dt="1.0">
-    <stock name="" allowNegative="true" x="339" y="75"></stock>
-    <converter name="" x="458" y="159"></converter>
-  </systemDynamics>
 </model>

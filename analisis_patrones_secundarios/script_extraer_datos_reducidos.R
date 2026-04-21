@@ -3,7 +3,7 @@
 # replicar patrones secundarios.
 
 #### Lectura de los datos crudos de las encuestas ####
-setwd("C:/Users/ulise/Documents/GitHub/Modelo-base-dinamica-de-opinion/experimentos/patrones secundarios")
+setwd("C:/Users/ulise/Documents/GitHub/Patrones secundarios para modelo basico de dinamica de opiniones/analisis_patrones_secundarios")
 library(tidyverse)
 library(haven)
 library(labelled)
@@ -36,9 +36,9 @@ tercera_encuesta_reducida <- tercera_encuesta %>%
   select(folio, unidad, region, edad, sexo, R78, pond, fexpm)
 
 # se guardan los datos filtrados en un archivo SAV
-write_sav(primera_encuesta_reducida, "primera_encuesta_reducida.sav")
-write_sav(segunda_encuesta_reducida, "segunda_encuesta_reducida.sav")
-write_sav(tercera_encuesta_reducida, "tercera_encuesta_reducida.sav")
+write_sav(primera_encuesta_reducida, "datos_sav/primera_encuesta_reducida.sav")
+write_sav(segunda_encuesta_reducida, "datos_sav/segunda_encuesta_reducida.sav")
+write_sav(tercera_encuesta_reducida, "datos_sav/tercera_encuesta_reducida.sav")
 
 
 #### Evaluacion de los ponderadores ####
@@ -63,9 +63,9 @@ porcentajes_preferencia <- primera_encuesta %>%
 
 #### Filtrado por opciones principales ####
 # Empiezo leyendo las bases de datos reducidas, para evitar problemas
-primera_encuesta_reducida <- read_sav(file = 'primera_encuesta_reducida.sav') 
-segunda_encuesta_reducida <- read_sav(file = 'segunda_encuesta_reducida.sav') 
-tercera_encuesta_reducida <- read_sav(file = 'tercera_encuesta_reducida.sav') 
+primera_encuesta_reducida <- read_sav(file = 'datos_sav/primera_encuesta_reducida.sav') 
+segunda_encuesta_reducida <- read_sav(file = 'datos_sav/segunda_encuesta_reducida.sav') 
+tercera_encuesta_reducida <- read_sav(file = 'datos_sav/tercera_encuesta_reducida.sav') 
 
 # Cambio los nombres de las variables, de forma que pueda manejar de manera mas
 # sencilla las bases de datos
@@ -81,12 +81,12 @@ tercera_encuesta_reducida <- tercera_encuesta_reducida %>%
 # valores tomados por las variables para mayor legibilidad
 
 primera_encuesta_dos_opciones <- primera_encuesta_reducida %>% 
-  filter(preferencias == 1 | preferencias == 2) %>% 
+  filter(preferencia == 1 | preferencia == 2) %>% 
   mutate(
     sexo = factor(sexo,
                   levels = c(1,2),
                   labels = c('Hombre', 'Mujer')),
-    preferencia = factor(preferencias,
+    preferencia = factor(preferencia,
                          levels = c(1,2,3,4,7),
                          labels = c("Xochitl", "Sheinbaum", "Samuel", "Independiente", "Indefinido")
     ),
@@ -97,12 +97,12 @@ primera_encuesta_dos_opciones <- primera_encuesta_reducida %>%
   )
 
 segunda_encuesta_dos_opciones <- segunda_encuesta_reducida %>% 
-  filter(preferencias == 1 | preferencias == 2) %>% 
+  filter(preferencia == 1 | preferencia == 2) %>% 
   mutate(
     sexo = factor(sexo,
                   levels = c(1,2),
                   labels = c('Hombre', 'Mujer')),
-    preferencia = factor(preferencias,
+    preferencia = factor(preferencia,
                          levels = c(1,2,3,4,7),
                          labels = c("Xochitl", "Sheinbaum", "Samuel", "Independiente", "Indefinido")),
     edad = factor(edad,
@@ -112,12 +112,12 @@ segunda_encuesta_dos_opciones <- segunda_encuesta_reducida %>%
   )
 
 tercera_encuesta_dos_opciones <- tercera_encuesta_reducida %>% 
-  filter(preferencias == 1 | preferencias == 2) %>% 
+  filter(preferencia == 1 | preferencia == 2) %>% 
   mutate(
     sexo = factor(sexo,
                   levels = c(1,2),
                   labels = c('Hombre', 'Mujer')),
-    preferencia = factor(preferencias,
+    preferencia = factor(preferencia,
                          levels = c(1,2,3,9),
                          labels = c("Xochitl", "Sheinbaum", "Samuel", "Indefinido")),
     edad = factor(edad,
@@ -129,30 +129,30 @@ tercera_encuesta_dos_opciones <- tercera_encuesta_reducida %>%
 # Guardo los datos procesados para un manejo mas facil, asi no debo de andar
 # repitiendo el proceso cada vez
 
-write_sav(primera_encuesta_dos_opciones, "primera_dos_opciones.sav")
-write_sav(segunda_encuesta_dos_opciones, "segunda_dos_opciones.sav")
-write_sav(tercera_encuesta_dos_opciones, "tercera_dos_opciones.sav")
+write_sav(primera_encuesta_dos_opciones, "datos_sav/primera_dos_opciones.sav")
+write_sav(segunda_encuesta_dos_opciones, "datos_sav/segunda_dos_opciones.sav")
+write_sav(tercera_encuesta_dos_opciones, "datos_sav/tercera_dos_opciones.sav")
 
 # Aqui verifico que si se correspondan mis porcentajes ajustados con aquellos
 # obtenidos de la encuesta reducida
 
 porcentajes_ajustados_primera <- primera_encuesta_dos_opciones %>% 
   mutate(peso = pond) %>% 
-  group_by(preferencias) %>% 
+  group_by(preferencia) %>% 
   summarise(votos_ponderados = sum(peso)) %>% 
   mutate(porcentaje_oficial = (votos_ponderados/sum(votos_ponderados)) * 100)
 print(porcentajes_ajustados_primera)
 
 porcentajes_ajustados_segunda <- segunda_encuesta_dos_opciones %>% 
   mutate(peso = pond) %>% 
-  group_by(preferencias) %>% 
+  group_by(preferencia) %>% 
   summarise(votos_ponderados = sum(peso)) %>% 
   mutate(porcentaje_oficial = (votos_ponderados/sum(votos_ponderados)) * 100)
 print(porcentajes_ajustados_segunda)
 
 porcentajes_ajustados_tercera <- tercera_encuesta_dos_opciones %>% 
   mutate(peso = pond) %>% 
-  group_by(preferencias) %>% 
+  group_by(preferencia) %>% 
   summarise(votos_ponderados = sum(peso)) %>% 
   mutate(porcentaje_oficial = (votos_ponderados/sum(votos_ponderados)) * 100)
 print(porcentajes_ajustados_tercera)

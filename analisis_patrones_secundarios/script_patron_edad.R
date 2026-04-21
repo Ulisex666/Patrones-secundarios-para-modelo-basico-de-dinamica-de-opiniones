@@ -5,21 +5,22 @@
 
 
 #### Lectura de los datos y limpieza ####
-setwd("C:/Users/ulise/Documents/GitHub/Modelo-base-dinamica-de-opinion/experimentos/patrones secundarios")
+setwd("C:/Users/ulise/Documents/GitHub/Patrones secundarios para modelo basico de dinamica de opiniones/analisis_patrones_secundarios")
 library(tidyverse)
 library(haven)
 library(labelled)
 
+primera_dos_opciones <- read_sav("datos_sav/primera_dos_opciones.sav") %>% 
+  as_factor() %>% 
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
 
-primera_dos_opciones <- read_sav("primera_dos_opciones.sav") %>% 
+segunda_dos_opciones <- read_sav("datos_sav/segunda_dos_opciones.sav") %>% 
   as_factor() %>% 
-  mutate(preferencias = fct_relevel(preferencias, "Sheinbaum", "Xochitl"))
-segunda_dos_opciones <- read_sav("segunda_dos_opciones.sav") %>% 
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
+
+tercera_dos_opciones <- read_sav("datos_sav/tercera_dos_opciones.sav") %>% 
   as_factor() %>% 
-  mutate(preferencias = fct_relevel(preferencias, "Sheinbaum", "Xochitl"))
-tercera_dos_opciones <- read_sav("tercera_dos_opciones.sav") %>% 
-  as_factor() %>% 
-  mutate(preferencias = fct_relevel(preferencias, "Sheinbaum", "Xochitl"))
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
 
 # Reviso la proporcion de entrevistados por rango de edad en cada encuesta, tomando
 # en cuenta el ponderador. En teoria, deberian de mantenerse igual o casi igual en 
@@ -49,21 +50,21 @@ tercera_pct_edad <- tercera_dos_opciones %>%
 
 # Primera encuesta
 primera_preferencia_por_edad <- primera_dos_opciones %>%
-  group_by(edad, preferencias) %>%
+  group_by(edad, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Segunda encuesta
 segunda_preferencia_por_edad <- segunda_dos_opciones %>%
-  group_by(edad, preferencias) %>%
+  group_by(edad, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Tercera encuesta
 tercera_preferencia_por_edad <- tercera_dos_opciones %>%
-  group_by(edad, preferencias) %>%
+  group_by(edad, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
@@ -73,21 +74,21 @@ tercera_preferencia_por_edad <- tercera_dos_opciones %>%
 
 # Primera encuesta
 primera_preferencia_por_partido <- primera_dos_opciones %>%
-  group_by(preferencias, edad) %>%
+  group_by(preferencia, edad) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Segunda encuesta
 segunda_preferencia_por_partido <- segunda_dos_opciones %>%
-  group_by(preferencias, edad) %>%
+  group_by(preferencia, edad) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Tercera encuesta
 tercera_preferencia_por_partido <- tercera_dos_opciones %>%
-  group_by(preferencias, edad) %>%
+  group_by(preferencia, edad) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
@@ -99,7 +100,7 @@ tercera_preferencia_por_partido <- tercera_dos_opciones %>%
 
 # Grafica de primera encuesta
 primera_preferencia_por_edad_plot <- ggplot(primera_preferencia_por_edad, 
-                                            aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+                                            aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ edad) +
@@ -111,7 +112,7 @@ primera_preferencia_por_edad_plot <- ggplot(primera_preferencia_por_edad,
   theme_void() + 
   labs(
     title = "Preference share by age",
-    subtitle = "Second survey",
+    subtitle = "First survey",
     fill = "Options"
   ) +
   theme(
@@ -125,7 +126,7 @@ primera_preferencia_por_partido_plot <- ggplot(primera_preferencia_por_partido,
                                             aes(x = "", y = porcentaje_votos, fill = edad)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
-  facet_wrap(~ preferencias, 
+  facet_wrap(~ preferencia, 
              labeller = as_labeller(c("Xochitl" = "B", "Sheinbaum" = "A"))) +
   geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
             position = position_stack(vjust = 0.5), 
@@ -145,7 +146,7 @@ print(primera_preferencia_por_partido_plot)
 
 # Grafica de segunda encuesta
 segunda_preferencia_por_edad_plot <- ggplot(segunda_preferencia_por_edad, 
-                                            aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+                                            aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ edad) +
@@ -171,7 +172,7 @@ segunda_preferencia_por_partido_plot <- ggplot(segunda_preferencia_por_partido,
                                                aes(x = "", y = porcentaje_votos, fill = edad)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
-  facet_wrap(~ preferencias, 
+  facet_wrap(~ preferencia, 
              labeller = as_labeller(c("Xochitl" = "B", "Sheinbaum" = "A"))) +
   geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
             position = position_stack(vjust = 0.5), 
@@ -192,7 +193,7 @@ print(segunda_preferencia_por_partido_plot)
 
 # Grafica de tercera encuesta
 tercera_preferencia_por_edad_plot <- ggplot(tercera_preferencia_por_edad, 
-                                            aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+                                            aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ edad) +
@@ -218,7 +219,7 @@ tercera_preferencia_por_partido_plot <- ggplot(tercera_preferencia_por_partido,
                                                aes(x = "", y = porcentaje_votos, fill = edad)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
-  facet_wrap(~ preferencias, 
+  facet_wrap(~ preferencia, 
              labeller = as_labeller(c("Xochitl" = "B", "Sheinbaum" = "A"))) +
   geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
             position = position_stack(vjust = 0.5), 
@@ -240,6 +241,7 @@ print(tercera_preferencia_por_partido_plot)
 #### Evolucion de preferencias por edad en el tiempo ####
 # Ahora evaluo el cambio de preferencia por edad en el tiempo, de una forma
 # mas entendible
+library(ggrepel)
 evolucion_preferencias_edad <- bind_rows(
   primera_preferencia_por_edad %>% mutate(encuesta = "Survey 1"),
   segunda_preferencia_por_edad %>% mutate(encuesta = "Survey 2"),
@@ -247,13 +249,18 @@ evolucion_preferencias_edad <- bind_rows(
 ) %>% 
   mutate(encuesta = factor(encuesta, levels = c("Survey 1", "Survey 2", "Survey 3")))
 
-evolucion_opcion_a <- evolucion_preferencias_edad %>% filter(preferencias == "Sheinbaum")
+evolucion_opcion_a <- evolucion_preferencias_edad %>% filter(preferencia == "Sheinbaum")
 evolucion_opcion_a_plot <- ggplot(evolucion_opcion_a, aes(x = encuesta,
                               y = porcentaje_votos, color = edad, group = edad)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 4) +
-  geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
-            vjust = -1.5, size = 4, fontface = "bold", show.legend = FALSE) +
+  geom_text_repel(aes(label = paste0(round(porcentaje_votos, 1), "%")),
+                  color = "brown4",
+                  size = 4, 
+                  fontface = "bold",
+                  box.padding = 0.5, 
+                  point.padding = 0.5,
+                  show.legend = FALSE) +
   scale_y_continuous(limits = c(min(evolucion_opcion_a$porcentaje_votos) - 5,
                                 max(evolucion_opcion_a$porcentaje_votos) + 10)) +
   labs(
@@ -269,13 +276,18 @@ evolucion_opcion_a_plot <- ggplot(evolucion_opcion_a, aes(x = encuesta,
 print(evolucion_opcion_a_plot)
 
 
-evolucion_opcion_b <- evolucion_preferencias_edad %>% filter(preferencias == "Xochitl")
+evolucion_opcion_b <- evolucion_preferencias_edad %>% filter(preferencia == "Xochitl")
 evolucion_opcion_b_plot <- ggplot(evolucion_opcion_b, aes(x = encuesta,
                                                           y = porcentaje_votos, color = edad, group = edad)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 4) +
-  geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
-            vjust = 1.5, hjust = -0.3, size = 4, fontface = "bold", show.legend = FALSE) +
+  geom_text_repel(aes(label = paste0(round(porcentaje_votos, 1), "%")),
+                  color = "steelblue2",
+                  size = 4, 
+                  fontface = "bold",
+                  box.padding = 0.5, 
+                  point.padding = 0.5,
+                  show.legend = FALSE) +
   scale_y_continuous(limits = c(min(evolucion_opcion_b$porcentaje_votos) - 5,
                                 max(evolucion_opcion_b$porcentaje_votos) + 10)) +
   labs(

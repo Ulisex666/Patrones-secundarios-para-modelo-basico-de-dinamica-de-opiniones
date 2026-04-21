@@ -4,18 +4,23 @@
 # en base al sexo y despues en base a las preferencias electorales. Asi, para cada
 # encuesta puedo ver cuantos hombres querian votar por Morena y cuantos por el PAN,
 # lo mismo para mujeres
-setwd("C:/Users/ulise/Documents/GitHub/Modelo-base-dinamica-de-opinion/experimentos/patrones secundarios")
+setwd("C:/Users/ulise/Documents/GitHub/Patrones secundarios para modelo basico de dinamica de opiniones/analisis_patrones_secundarios")
 library(tidyverse)
 library(haven)
 library(labelled)
 
 
-primera_dos_opciones <- read_sav("primera_dos_opciones.sav") %>% 
-  as_factor()
-segunda_dos_opciones <- read_sav("segunda_dos_opciones.sav") %>% 
-  as_factor()
-tercera_dos_opciones <- read_sav("tercera_dos_opciones.sav") %>% 
-  as_factor()
+primera_dos_opciones <- read_sav("datos_sav/primera_dos_opciones.sav") %>% 
+  as_factor() %>% 
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
+
+segunda_dos_opciones <- read_sav("datos_sav/segunda_dos_opciones.sav") %>% 
+  as_factor() %>% 
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
+
+tercera_dos_opciones <- read_sav("datos_sav/tercera_dos_opciones.sav") %>% 
+  as_factor() %>% 
+  mutate(preferencia = fct_relevel(preferencia, "Sheinbaum", "Xochitl"))
 
 ## Primero reviso la proporcion por sexo en cada encuesta. En teoria deberia de
 ## matenerse al considerar el ponderador
@@ -43,21 +48,21 @@ tercera_pct_sexos <- tercera_dos_opciones %>%
 
 # Primera encuesta
 primera_preferencia_por_sexo <- primera_dos_opciones %>%
-  group_by(sexo, preferencias) %>%
+  group_by(sexo, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Segunda encuesta
 segunda_preferencia_por_sexo <- segunda_dos_opciones %>%
-  group_by(sexo, preferencias) %>%
+  group_by(sexo, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Tercera encuesta
 tercera_preferencia_por_sexo <- tercera_dos_opciones %>%
-  group_by(sexo, preferencias) %>%
+  group_by(sexo, preferencia) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
@@ -68,21 +73,21 @@ tercera_preferencia_por_sexo <- tercera_dos_opciones %>%
 
 # Primera encuesta
 primera_preferencia_por_partido <- primera_dos_opciones %>%
-  group_by(preferencias, sexo) %>%
+  group_by(preferencia, sexo) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Segunda encuesta
 segunda_preferencia_por_partido <- segunda_dos_opciones %>%
-  group_by(preferencias, sexo) %>%
+  group_by(preferencia, sexo) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
 
 # Tercera encuesta
 tercera_preferencia_por_partido <- tercera_dos_opciones %>%
-  group_by(preferencias, sexo) %>%
+  group_by(preferencia, sexo) %>%
   summarise(votos_ponderados = sum(pond, na.rm = TRUE), 
             .groups = "drop_last") %>% 
   mutate(porcentaje_votos = (votos_ponderados / sum(votos_ponderados)) * 100)
@@ -92,7 +97,7 @@ tercera_preferencia_por_partido <- tercera_dos_opciones %>%
 # por sexo y despues por preferencia
 
 # Grafica para la primera encuesta
-primera_preferencia_por_sexo_plot <- ggplot(primera_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+primera_preferencia_por_sexo_plot <- ggplot(primera_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ sexo, 
@@ -114,9 +119,11 @@ primera_preferencia_por_sexo_plot <- ggplot(primera_preferencia_por_sexo, aes(x 
     plot.subtitle = element_text(hjust = 0.5, face = 'bold', size = 14)
   )
 print(primera_preferencia_por_sexo_plot)
+ggsave("figures/first_poll_preference_share_gender.png", plot = primera_preferencia_por_sexo_plot,
+       width = 8, height = 5, dpi = 300)
 
 # Graficas para la segunda encuesta
-segunda_preferencia_por_sexo_plot <- ggplot(segunda_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+segunda_preferencia_por_sexo_plot <- ggplot(segunda_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ sexo, 
@@ -139,9 +146,11 @@ segunda_preferencia_por_sexo_plot <- ggplot(segunda_preferencia_por_sexo, aes(x 
     #legend.position = "bottom"
   )
 print(segunda_preferencia_por_sexo_plot)
+ggsave("figures/second_poll_preference_share_gender.png", plot = segunda_preferencia_por_sexo_plot,
+       width = 8, height = 5, dpi = 300)
 
 # Graficas para la tercera encuesta
-tercera_preferencia_por_sexo_plot <- ggplot(tercera_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencias)) +
+tercera_preferencia_por_sexo_plot <- ggplot(tercera_preferencia_por_sexo, aes(x = "", y = porcentaje_votos, fill = preferencia)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   facet_wrap(~ sexo, 
@@ -164,7 +173,8 @@ tercera_preferencia_por_sexo_plot <- ggplot(tercera_preferencia_por_sexo, aes(x 
     #legend.position = "bottom"
   )
 print(tercera_preferencia_por_sexo_plot)
-
+ggsave("figures/third_poll_preference_share_gender.png", plot = tercera_preferencia_por_sexo_plot,
+       width = 8, height = 5, dpi = 300)
 
 #### Evolucion de las preferencias en el tiempo ####
 # De forma similar a los primeros experimentos, quiero ver ahora el cambio de
@@ -190,7 +200,7 @@ evolucion_preferencias_mujer <- evolucion_preferencias_sexo %>%
 # Grafico el cambio para hombres
 evolucion_preferencias_hombre_plot <- ggplot(evolucion_preferencias_hombre, 
                               aes(x = encuesta, y = porcentaje_votos, 
-                                  color = preferencias, group = preferencias)) +
+                                  color = preferencia, group = preferencia)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 4) +
   geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
@@ -216,11 +226,13 @@ evolucion_preferencias_hombre_plot <- ggplot(evolucion_preferencias_hombre,
     axis.title = element_text(face = "bold")
   )
 print(evolucion_preferencias_hombre_plot)
+ggsave("figures/evolution_preference_share_men.png", plot = evolucion_preferencias_hombre_plot,
+       width = 8, height = 5, dpi = 300)
 
 # Grafico el cambio para mujeres
 evolucion_preferencias_mujer_plot <- ggplot(evolucion_preferencias_mujer, 
                                              aes(x = encuesta, y = porcentaje_votos, 
-                                                 color = preferencias, group = preferencias)) +
+                                                 color = preferencia, group = preferencia)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 4) +
   geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
@@ -246,3 +258,5 @@ evolucion_preferencias_mujer_plot <- ggplot(evolucion_preferencias_mujer,
     axis.title = element_text(face = "bold")
   )
 print(evolucion_preferencias_mujer_plot)
+ggsave("figures/evolution_preference_share_women.png", plot = evolucion_preferencias_mujer_plot,
+       width = 8, height = 5, dpi = 300)
