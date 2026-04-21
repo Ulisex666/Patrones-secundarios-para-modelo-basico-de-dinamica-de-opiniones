@@ -1,0 +1,146 @@
+\documentclass{beamer}
+\input{config/rc-slides-config.tex}
+\usepackage[english]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+%\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{natbib}
+%\usepackage{caption}
+% \usepackage{mathtools}
+% \usepackage{algorithm}
+% \usepackage{algorithmic}
+%\usepackage{tabularx}
+%\usepackage{xltabular}  
+%\usepackage{booktabs} 
+\usepackage{xcolor}
+\usepackage{makecell}
+\usepackage{lipsum}
+% \usepackage{tikz} 
+%\usepackage{minted}
+% \usepackage{setspace}
+\usepackage{hyperref}
+
+\title[Secondary patterns]{POM: Evaluating capability to reproduce multiple patterns}
+\institute[UV]{\textbf{Instituto de Investigaciones en Inteligencia Artificial} \\ Universidad Veracruzana \\ \vspace{0.25cm} \emph{Campus Sur, Calle Paseo Lote II, Sección Segunda No 112, \\ Nuevo Xalapa, Xalapa, Ver., México 91097}  \\ 
+	\vspace{0.25cm}   
+}
+\author[Ulises J. G.]{Ulises Jiménez Guerrero}
+\date[MIA 2026]{\today}
+
+\logo{
+	\includegraphics[width=0.8cm]{figs/logo_UV.png} 
+}
+
+%\usetheme{CambridgeUS}
+
+\begin{document}
+	
+\begin{frame}
+	\maketitle
+\end{frame}
+		
+\section{Objectives}
+
+\begin{frame}{Objectives}
+	\begin{itemize}
+		\item An ABM opinion dynamics model was developed to reproduce the opinion change during the Mexican 2024 presidential election. It was found to be capable of reproducing the main pattern considered: empirical preference share registered in a selected opinion poll.
+		
+		\item For the current experiments, we follow Pattern Oriented Modeling (POM) \cite{railsbackAgentbasedIndividualbasedModeling2019} and evaluate the model's capability to reproduce multiple patterns observed in an election, such as vote share by gender and age group.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Structural realism}
+	\begin{itemize}
+		\item An ABM should be as simple as possible while still capturing and reproducing the key characteristics and behaviors of the real system, based on the objectives of the simulation.
+		
+		\item This is called \emph{structural realism}: including only the essential components of a real system that are needed to produce the main properties and behaviors. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Pattern Oriented Modeling (POM)}
+	\begin{itemize}
+		\item A model can be capable of reproducing the main pattern observed in a phenomena while not having structural realism.
+		
+		\item POM helps to identify the main components necessary in the model, by using \emph{multiple} observed patterns in the real system. A model capable of reproducing multiple patterns is more likely to have achieved structural realism.
+	\end{itemize}
+\end{frame}
+
+\section{Materials and methods}
+\begin{frame}{Chosen opinion polls}
+	\begin{itemize}
+		\item The proposed model is based on the study carried over by the group GEA-ISA for the election analyzed. It reports the voting intention of 1070 mexican citizens interviewed at a nationwide scale, registering multiple demographic variables. 
+		
+		\item The data was adjusted to consider only the two main candidates. The election results were also considered, and the resulting preference share is as shown in the following table.
+	\end{itemize}
+	\centering
+	\begin{table}
+		\resizebox{1 \textwidth}{!}{
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				\textbf{Date} & 
+				\textbf{Time (days)} & 
+				\textbf{Preference for A (\%)} & 
+				\textbf{Preference for B (\%)} 
+				\\
+				\hline
+				2023/09/16 &
+				0  &
+				61  & 
+				39
+				\\ 
+				\hline
+				2023/11/25 &
+				70  &
+				64  &
+				36
+				\\
+				\hline 
+				2024/03/01 &
+				167  &
+				61 &
+				39 \\
+				\hline 
+				\textbf{(Election day) 2024/06/02} &
+				260  &
+				68 &
+				32 \\
+				\hline
+			\end{tabular}
+		}	
+	\end{table}
+\end{frame}
+
+\begin{frame}{Basic model}
+	\begin{itemize}
+		\item A basic model of opinion dynamics was developed considering the poll's characteristics and the restrictions of a political election. The model considers three different types of influence, based on a classification given by \cite{flacheModelsSocialInfluence2017b, smaldinoModelingSocialBehavior2023}.
+		
+		\item The model consist of 1070 individual, with every time step representing a day. As such, a run consist of 260 time steps or ticks, considering the days since the first poll until the election day. The initial preference share is taken from the first available poll.
+		
+		\item The model was capable of reproducing the main pattern of preference share at the three dates with empirical data.
+	\end{itemize}	
+\end{frame}
+
+\begin{frame}{Limitations of the basic model}
+	\begin{itemize}
+		\item The developed basic model doesn't consider any characteristic for the agents besides their initial preference. As such, the only pattern capable to be validated is the preference share.
+		
+		\item To validate multiple patterns, the model needs to be modified so the agents have multiple characteristics beyond their opinion. As such, we start by adding gender based on the polls and the available demographic data.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Preference share by gender}
+	\begin{itemize}
+		\item After
+	\end{itemize}
+\end{frame}
+
+\section{Bibliography}
+\begin{frame}[allowframebreaks]{Bibliography}
+	\bibliographystyle{plain}
+	\bibliography{fuentes}
+\end{frame}
+\end{document}}

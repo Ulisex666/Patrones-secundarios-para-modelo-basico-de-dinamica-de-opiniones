@@ -1,0 +1,207 @@
+%%% SETTINGS FOR RC SLIDES
+
+\mode<presentation>
+{\usetheme{CambridgeUS}
+ \setbeamercovered{transparent}
+
+ \setbeamertemplate{items}[default]
+ \setbeamertemplate{section in toc}[square]
+ \setbeamertemplate{subsection in toc}[square]
+
+% \setbeamertemplate{navigation symbols}{}        
+% \setbeamertemplate{footline}[page number]
+
+
+ \setbeamercolor{title}{bg=uvgreen, fg=white}
+ \setbeamercolor{author}{fg=uvblue}
+ \setbeamercolor{section in head/foot}{bg=uvblue,fg=white}
+ \setbeamercolor{subsection in head/foot}{fg=white,bg=uvgrey}
+ \setbeamercolor{author in head/foot}{bg=uvblue,fg=white}
+ \setbeamercolor{title in head/foot}{bg=uvgrey,fg=white}
+ \setbeamercolor{frametitle}{bg=uvgreen, fg=white}
+ \setbeamercolor{date in head/foot}{bg=uvgreen,fg=white}
+ \setbeamercolor{description item}{fg=uvblue}
+ \setbeamercolor{description subitem}{fg=uvblue}
+ \setbeamercolor{itemize item}{fg=uvblue}
+ \setbeamercolor{itemize subitem}{fg=uvblue}
+ \setbeamercolor{enumerate item}{fg=uvblue}
+ \setbeamercolor{enumerate subitem}{fg=uvblue}
+ \setbeamercolor{block title}{bg=uvgreen}
+ \setbeamercolor{block body}{bg=uvgreen!20}
+ \setbeamercolor{institute}{fg=uvblue}
+ \setbeamercolor{date}{fg=uvgreen}
+ \setbeamercolor{section number projected}{fg=white, bg=uvblue}
+ \setbeamercolor{subsection number projected}{fg=uvblue, bg=uvblue}
+}
+
+\usepackage[english]{babel}
+\selectlanguage{english}
+
+
+%\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage[cache=false]{minted}
+%\usepackage{amsmath,amssymb,amsthm}
+%\usepackage{stmaryrd}
+%\usepackage{xcolor}
+%\usepackage{latexsym}
+%\usepackage{graphicx}
+%\usepackage[sorting=nyt,giveninits=true,terseinits=true,backend=bibtex,doi=false]{biblatex}
+%\usepackage[Algoritmo]{algorithm}
+%\usepackage{algpseudocode}
+%\usepackage{tikz}
+%\usepackage{logicproof}
+%\usepackage{proof}
+%\usepackage{booktabs} 
+%\usepackage{colortbl} 
+%\usepackage{xfrac}
+%\usepackage{minted}
+%\usepackage{multicol}
+
+%\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
+%%% TITULOS
+
+%\title{Modelado y simulación basado en agentes para un
+%	estudio comparativo de la dinámica de opinión y
+%	sus efectos electorales} 
+%\author{Ulises Jiménez Guerrero} 
+%
+%\institute[UV]{\textbf{Instituto de Investigaciones en Inteligencia Artificial} \\ Universidad Veracruzana \\ \vspace{0.25cm} \emph{Campus Sur, Calle Paseo Lote II, Sección Segunda No 112, \\ Nuevo Xalapa, Xalapa, Ver., México 91097}  \\ 
+%\vspace{0.25cm}   
+%%\url{mailto:aguerra@uv.mx} \\
+%%\url{https://www.uv.mx/personal/aguerra/rc}
+%}
+%
+%\date[MIA 2026]{\today} 
+
+%%% COLORS
+
+\definecolor{gray97}{gray}{.97}
+\definecolor{gray75}{gray}{.75}
+\definecolor{gray45}{gray}{.45}
+\definecolor{uvblue}{RGB}{0,91,171}
+\definecolor{uvgreen}{RGB}{0,171,78}
+\definecolor{uvgrey}{RGB}{128,128,128}
+\definecolor{white}{RGB}{255,255,255}
+
+\newcommand{\blue}[1]{\textcolor{uvblue}{#1}}
+\newcommand{\green}[1]{\textcolor{uvgreen}{#1}}
+
+%% TABLES
+
+\newcommand{\thd}[1]{\textcolor{white}{\textbf{#1}}}
+\newcommand{\tbr}{\rowcolor{uvblue}}
+\newcommand{\tgr}{\rowcolor{uvgreen!20}}
+\renewcommand{\arraystretch}{1.2}
+
+%%% IMAGENES
+
+%\pgfdeclareimage[height=1.75cm]{university-logo}{uv}
+%\logo{\pgfuseimage{university-logo}}
+%\graphicspath{{../../imagenes/}}
+
+%%% THEOREMS
+
+%\newtheorem {mydef}{Definición} %% definition
+%\newtheorem {myaxi}{Axioma} %% axiom
+%\newtheorem {mythe}{Teorema} %% theorem
+%\newtheorem {mylem}{Lema} %% lemma
+
+%%% BIB
+
+%\addbibresource{ref.bib}
+%\renewcommand{\nameyeardelim}{, }
+%\renewcommand*{\bibfont}{\scriptsize}
+%\renewcommand{\footnotesize}{\tiny}
+
+%%% SPACE FOR LISTS
+
+\BeforeBeginEnvironment{enumerate}{\smallskip}
+\BeforeBeginEnvironment{itemize}{\smallskip}
+\BeforeBeginEnvironment{description}{\smallskip}
+
+
+%%% CODE
+
+%\makeatletter
+%\AtBeginEnvironment{minted}{\dontdofcolorbox}
+%\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+%\makeatother
+%
+%\BeforeBeginEnvironment{minted}{\medskip}
+%\AfterEndEnvironment{minted}{\medskip}
+%
+%\setmintedinline{fontsize=\small}
+%\setminted{linenos=true, autogobble=true, tabsize=2, fontsize=\scriptsize, numbersep=10pt, breaklines, texcomments}
+%
+%\renewcommand{\theFancyVerbLine}{\sffamily \textcolor{uvgrey} {\tiny \oldstylenums{\arabic{FancyVerbLine}}}}
+
+
+%%% FORMALISMS
+%
+%% DL
+%
+%\newcommand{\dl}{\ensuremath{\mathcal{DL}}}
+%
+%\newcommand{\dlSub}{\ensuremath{\sqsubseteq}}
+%\newcommand{\dlEqu}{\ensuremath{\mathbin{\dot{=}}}}
+%\newcommand{\dlSat}{\ensuremath{\rightarrow}}
+%
+%\newcommand{\dlAll}{\ensuremath{\mathrel{\mathrm{\bf ALL}}}}
+%\newcommand{\dlExi}{\ensuremath{\mathrel{\mathrm{\bf EXISTS}}}}
+%\newcommand{\dlFil}{\ensuremath{\mathrel{\mathrm{\bf FILLS}}}}
+%\newcommand{\dlAnd}{\ensuremath{\mathrel{\mathrm{\bf AND}}}}
+%
+%
+%\newtheorem {myir} {Regla de Inferencia} %% inference rule
+%\newtheorem {mydr} {Der R} %% derivation rule
+%\newtheorem {mycon}{Const} %% constant
+%
+%\newtheorem {pcsynr} {CalcProp Sint} %% PC syntactic rule
+%\newtheorem {pcsemr} {CalcProp Sem} %% PC semantic rule
+%\newtheorem {folsynr} {CalcPred Sint} %% FOL syntactic rule
+%\newtheorem {folsemr} {CalcPred Sem} %% FOL semantic rule
+%\newtheorem {pmlsynr} {Modal Sint} %% PML syntactic rule
+%\newtheorem {pmlsemr} {Modal Sem} %% PML semantic rule
+%\newtheorem {pmlk} {K} %% propositional modal logic K-valid wff
+%\newtheorem {pmlt} {T} %% propositional modal logic T-valid wff
+%\newtheorem {pmld} {D} %% propositional modal logic D-valid wff
+%\newtheorem {pmls4} {S4} %% the same for S4
+%\newtheorem {pmls5} {S5} %% the same for S5
+%\newtheorem {pltlsynr} {PLTL Syn} %% PLTL syntax rule
+%\newtheorem {pltlsemr} {PLTL Sem} %% PLTL semantic rule
+%\newtheorem {pbtlsynr} {PBTL Syn} %% Branching temporal logic syntax
+%\newtheorem {pbtlsemr} {PBTL Sem} %% Branching temporal logic semantics
+%
+%\newcommand{\bel}{\ensuremath{\mathsf{BEL}}}
+%\newcommand{\des}{\ensuremath{\mathsf{DES}}}
+%\renewcommand{\int}{\ensuremath{\mathsf{INTEND}}}
+%\newcommand{\asintend}{\ensuremath{\intend_{\langle ag,C \rangle}}}
+%\newcommand{\asbel}{\ensuremath{\bel_{\langle ag,C \rangle}}}
+%\newcommand{\asdes}{\ensuremath{\des_{\langle ag,C \rangle}}}
+%\newcommand{\inevitable}{\ensuremath{\mathsf{A}}}
+%\newcommand{\optional}{\ensuremath{\mathsf{E}}}
+%\newcommand{\eventually}{\ensuremath{\Diamond}}
+%\newcommand{\always}{\ensuremath{\Box}}
+%\newcommand{\until}{\ensuremath{\ \mathsf{U} \ }}
+%\newcommand{\nex}{\ensuremath{\bigcirc}}
+%\newcommand{\sep}{\ensuremath{ \ | \ }}
+%\newcommand{\mathdef}{\ensuremath{\stackrel{\mbox{\scriptsize
+%def}}{=}}}
+%
+%
+%%%% Algorithms
+%
+%%%% Adding switch and case
+%
+%% New definitions
+%\algnewcommand\algorithmicswitch{\textbf{switch}}
+%\algnewcommand\algorithmiccase{\textbf{case}}
+%\algnewcommand\algorithmicassert{\texttt{assert}}
+%\algnewcommand\Assert[1]{\State \algorithmicassert(#1)}%
+%% New "environments"
+%\algdef{SE}[SWITCH]{Switch}{EndSwitch}[1]{\algorithmicswitch\ #1\ \algorithmicdo}{\algorithmicend\ \algorithmicswitch}%
+%\algdef{SE}[CASE]{Case}{EndCase}[1]{\algorithmiccase\ #1}{\algorithmicend\ \algorithmiccase}%
+%\algtext*{EndSwitch}%
+%\algtext*{EndCase}%

@@ -1,0 +1,1523 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model version="NetLogo 7.0.2" snapToGrid="false">
+  <code><![CDATA[globals [ 
+ ; influence-type
+ percent-option-B ;= 39, en base a las encuestas
+ ; agents-updated-per-tick 
+ ;spatial-interactions?
+ pref-A
+ pref-B
+]
+; turtles-own [opinion]
+
+patches-own [
+  opinion
+  sex
+]
+
+;;Crear una tortuga por patch y dar opinión inicial aleatoria
+to setup
+  clear-all
+;  ask patches[
+;    sprout 1[
+;     ; set opinion (random-float 2) - 1 ;;opinión inicial uniforme entre [-1, 1]
+;      set shape "circle"
+;    ]
+;  ]
+  initial-characteristics
+  initial-opinions
+  update-colors ;;colorear de acuerdo a opinión
+  update-preferences ;; Contar agentes con preferencia por A y por B
+  reset-ticks
+end
+
+to initial-characteristics
+; Los datos se leen del archivo que ya se preparo para este objetivo
+  file-open "initial_agent_data_2.txt" ; Se abre el archivo, ya preprocesado
+  while [not file-at-end?]
+  [ let next-X file-read
+    let next-Y file-read
+    let next-sex file-read
+ 
+    ask patch next-X next-Y [
+      set sex next-sex
+    ]
+  ]
+  file-close ; Se cierra el archvio despues de leer los datos
+end
+
+to initial-opinions
+  ask (patches with [sex != 0]) [
+    set opinion random-float 1
+  ]
+  ask n-of ( (39 / 100) * (858) )  (patches with [sex != 0]) [
+    set opinion random-float -1
+  ]
+end
+
+to go
+  ;; dos agentes se eligen de manera aleatoria para interactuar
+  ask n-of agents-updated-per-tick (patches with [sex != 0]) [
+    let x1 opinion 
+    let other-patch one-of other (patches with [sex != 0])
+    
+    if spatial-interactions? 
+      [set other-patch one-of neighbors4] 
+    
+    let x2 [opinion] of other-patch
+    ;; Influencia positiva. Todos se hacen más iguales
+    if influence-type = "positive"
+    [let x1-new (x1 + learning-rate * (x2 - x1))
+    let x2-new (x2 + learning-rate * (x1 - x2))
+    set opinion x1-new
+      ask other-patch [ set opinion x2-new]]
+    
+    ;; Confianza acotada. Solo te afectan los que se parecen a ti
+    if influence-type = "BC"
+    [if (abs (x1 - x2) < confidence-threshold) [ ; Son suficientemente iguales?
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+    ]
+    
+    ;; Influencia negativa. Opiniones muy opuestas se hacen más extremas
+    if influence-type = "negative"
+    [ if (abs (x1 - x2) < confidence-threshold) [ ; Son suficientemente iguales?
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+      if (abs (x1 - x2) > confidence-threshold)[ ; Son muy diferentes?
+        ifelse (x1 > x2)
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+      ]
+    ]     
+  ]
+  update-colors
+  update-preferences
+  tick
+  if ticks = 260 [
+    update-colors
+    update-preferences
+    stop
+  ] 
+end
+
+;; Color de agentes en base a la opinión
+to update-colors
+  ask patches [ if-else opinion > 0
+    [ set pcolor scale-color red opinion 0 1]
+    [ set pcolor scale-color blue opinion -1 0]
+  ]
+end
+
+;; Se agrega contador de agentes con preferencias por A y B, para reporte en los experimentos
+to update-preferences
+  set pref-A (count patches with [opinion > 0 and sex != 0] )
+  set pref-B (count patches with [opinion < 0 and sex != 0] )
+end]]></code>
+  <widgets>
+    <view x="269" wrappingAllowedX="false" y="14" frameRate="30.0" minPycor="-5" height="54" showTickCounter="true" patchSize="5.0" fontSize="10" wrappingAllowedY="false" width="539" tickCounterLabel="ticks" maxPycor="4" updateMode="0" maxPxcor="53" minPxcor="-53"></view>
+    <button x="52" y="31" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="66">setup</button>
+    <button x="138" y="32" height="40" disableUntilTicks="true" forever="true" kind="Observer" width="92">go</button>
+    <plot x="597" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="opinions" y="85" xMin="0.0" height="199" legend="false" xMax="260.0" yMin="-1.0" width="382" xAxis="time" display="Agent opinions over time">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="2" display="default" color="-14730904" legend="true">
+        <setup></setup>
+        <update>if ticks mod 10 = 0 [
+  ask patches with [sex != 0][
+    plotxy ticks opinion
+  ]
+]</update>
+      </pen>
+    </plot>
+    <plot x="274" autoPlotX="false" yMax="10.0" autoPlotY="false" yAxis="number of patches" y="84" xMin="-1.2" height="198" legend="false" xMax="1.2" yMin="0.0" width="310" xAxis="opinion" display="Agent opinions">
+      <setup>set-plot-x-range -1.02 1.02
+set-plot-y-range 0 count patches
+set-histogram-num-bars 40
+</setup>
+      <update></update>
+      <pen interval="1.0" mode="1" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>histogram [opinion] of patches</update>
+      </pen>
+    </plot>
+    <plot x="317" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="296" xMin="0.0" height="175" legend="false" xMax="260.0" yMin="0.0" width="230" xAxis="Number of days" display="Preference for A over time">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
+        <setup></setup>
+        <update>plot (pref-A / 858) * 100</update>
+      </pen>
+    </plot>
+    <plot x="576" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="297" xMin="0.0" height="175" legend="false" xMax="260.0" yMin="0.0" width="230" xAxis="Number of days" display="Preference for B over time">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-14730904" legend="true">
+        <setup></setup>
+        <update>plot (pref-B / 858) * 100</update>
+      </pen>
+    </plot>
+    <chooser x="14" y="201" height="60" variable="influence-type" current="0" width="250" display="influence-type">
+      <choice type="string" value="positive"></choice>
+      <choice type="string" value="BC"></choice>
+      <choice type="string" value="negative"></choice>
+    </chooser>
+    <slider x="14" step="0.1" y="273" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="1.0" variable="confidence-threshold"></slider>
+    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.71" variable="learning-rate"></slider>
+    <switch x="69" y="91" height="40" on="false" variable="spatial-interactions?" width="141" display="spatial-interactions?"></switch>
+    <slider x="13" step="1" y="333" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="5.0" variable="agents-updated-per-tick"></slider>
+  </widgets>
+  <info><![CDATA[# Propósito y patrones
+
+El propósito del modelo es la simulación de la elección presidencial mexicana llevada a cabo en el 2024, mediante el uso de dinámica de opiniones. En este contexto, *una opinión es la posición que se tiene sobre un tema, y se formaliza como un número que cambia entre dos extremos*. Se espera que las personas modifiquen sus opiniones después de interactuar con sus pares a través del efecto de la influencia social. Se consideran tres tipos de influencia diferentes entre los agentes durante de una interacción.
+
+- **Influencia positiva.** Después de una interacción, dos agentes siempre tendrán una opinión más cercana a la del otro. Esto toma como base teorías cognitivas que hacen hincapié en el papel del aprendizaje social y de la presión social para seguir las normas de un grupo.
+
+- **Confianza acotada.** Un agente es influenciado a tomar una opinión más cercana a la del otro agente en la interacción solamente si sus opiniones son suficientemente similares. Qué tan parecida debe ser la opinión de otro agente está determinado por una cota o límite de confianza. La base teórica principal es el sesgo de confirmación, la tendencia de preferir información que este de acuerdo con lo que ya se opina y evadir aquella que contradiga nuestras creencias.
+
+- **Influencia negativa.** Si dos agentes con opiniones muy disimilares interactúan entre ellos, se influencian en sentido opuesto, tomando opiniones todavía más dispares. Esto toma como base teórica efectos como la xenofobia o el rechazo a grupos percibidos como externos, aunque la evidencia empírica de este efecto es mixta.
+
+La opinión es convertida a voto dependiendo de su valor, tomando como referencia los dos candidatos principales en la elección real. De esta forma, el principal patrón a evaluar es la evolución del voto durante todo el periodo de la simulación, con el objetivo de replicar la distribución de voto observada en la elección real. Se utiliza una serie de encuestas de opinión realizadas durante el periodo electoral como refencia.
+
+# Entidades, variables de estado y escalas
+
+Las únicas entidades del modelo son las parcelas, indicando un votante dentro de las encuestas de opinión tomadas como referencia. Cada una se encuentra definida por una variable de estado: su opinión en un momento dado. Esta es un valor real en el rango *[-1,1]*, donde 1 indica una opinión completamente a favor del candidato A y -1 una opinión completamente a favor del candidato B. Cuando se activa el parámetro *local-interactions?* cada agente puede comunicarse únicamente con sus cuatro vecinos más cercanos, por lo que esto se vuelve otra característica que define su comportamiento.
+
+Se utiliza un mundo cerrado de tamaño *107x10*, con cada parcela representando un votante de la encuestas. De esta forma, se tiene 1070 agentes dentro del modelo. El alcance temporal del modelo se da en base al número de días desde la primera encuestas hasta el día de la elección, con un total de 260 días. Cada tick representa un día, con el modelo ejecutándose un total de 260 ticks.
+
+# Descripción general y *scheduling*
+
+El modelo realiza las siguientes acciones por cada paso de tiempo.
+
+**Selección de agentes iniciales**. Se selecciona a una cantidad de parcelas definida por el parámetro *agents-updated-per-tick* de manera aleatoria de entre todas las presentes en el modelo. 
+
+**Selección de agentes para interacción.** Cada uno de los *n* agentes iniciales selecciona a otro agente en el modelo para interactuar. Si se tiene activado el parámetro *spatial-interactions?*, cada agente inicial debe seleccionar a uno de sus vecinos. En caso contrario, selecciona un agente al azar de todos los presentes en el modelo, permitiendo repeticiones.
+
+**Interacción entre agentes.** Los agentes cambian su opinión de acuerdo al tipo de inlfuencia seleccionado en la simulación, detallados en la sección de submodelos. Si se cumplen las condiciones adecuadas, ambos agentes presentes en la simulación modifican el valor de su opinión.
+
+**Actualización de las preferencias**. Al terminar las interacciones entre los seleccionados, se actualizan las preferencias de voto del modelo de acuerdo al cambio de las opiniones.
+
+**Visualización.** El color de los agentes es modificado de acuerdo al valor de su opinión, y se actualizan las gráficas y visualizaciones en el modelo.
+
+**Terminación**. Al llegar al tick 260, el modelo actualiza las preferencias y las visualizaciones por una última vez, terminando su ejecución.
+
+
+# Conceptos de diseño
+
+- **Principios básicos.** La suposición básica en todo modelo de dinámica de opinión es que la influencia social tiene un papel fundamental a a la hora de formar y modificar opiniones. En este caso se esta consideran tres diferentes tipos de influencia al interactuar con otros agentes, cada una con diferentes justificaciones en ciencias sociales y psicología. Al activar las interacciones espaciales, se esta asumiendo que el efecto de la influencia social se da únicamente por aquellos considerados cercanos. 
+
+- **Emergencia.** Los patrones principales a buscar son la distribución de opiniones a escala global en el sistema y la distribución de la preferencia de votos emergente de esta. Estos patrones emergen de la interacción entre pares de los agentes del sistema y del tipo de influencia seleccionado.
+
+- **Adaptación.** Los agentes adaptan su opinión después de interactuar con otros agentes de acuerdo al tipo de influencia seleccionado en la simulación. Para una influencia positiva, el agente busca parecerse más a cualquier otra persona después de una interacción. En el caso de confianza acotada, busca solamente parecerse a aquellos similares a sí mismo. Para la influencia negativa, busca alejar su opinión de aquellas que sean muy disimilares.
+
+- **Objetivos.** Los tres modelos de influencia asumen que un agente busca ajustar su opinión de acuerdo a las interacciones con otros. Se difiere en qué agentes son considerados suficientemente importantes como para afectar la opinión, y el sentido en que se afecta esta opinión.
+
+- **Aprendizaje.** Este concepto no se utiliza en el modelo.
+
+- **Predicción.** Este concepto no se utiliza en el modelo.
+
+- **Percepciones.** En la interacción entre agentes, se asume que cada agente es completamente consciente de la opinión del otro.
+
+- **Interacciones.** La interacción a modelar es el compartir opinión entre pares y cómo estas opiniones son modificadas de acuerdo al tipo de influencia considerado. Las interacciones se dan de forma directa, donde la opinión de un agente afecta la del otro de acuerdo al tipo de interacción.
+
+- **Estocásticidad.** Las opiniones iniciales de cada agente se dan de forma aleatoria, siguiendo una distribución uniforme. Los agentes a interactuar en cada paso de tiempo se seleccionan de manera aleatoria.
+
+- **Colectivos.** Este concepto no se utiliza en el modelo.
+
+- **Observaciones.** Los agentes cambian su color de acuerdo a la opinión que tengan en ese momento, con valores entre -1 y 1. Aquellos con valores cercanos a -1 tomarán un color azul intenso, mientras que aquellos con valores cercanos a 1 tomarán colores rojos.También se tiene un histograma de las opiniones en todo el sistema, junto a una gráfica que muestra su evolución cada 10 pasos de tiempo. Para la visualización de las preferencias de voto se cuenta con dos gráficos, uno que indica el porcentaje de preferencia por A mientras que la segunda muestra las preferencias por B, siendo actualizadas cada paso de tiempo.
+
+# Inicialización
+
+El modelo se inicializa asignando las opiniones iniciales a los agentes de acuerdo al parámetro *percent-option-B*, indicando el porcentaje de agentes con preferencia por la opción B. Para la comparación con las encuestas de opinión utilizadas, este parámetro debe tomar el valor de 39. Las opiniones iniciales para los agentes con preferencia por A se generan con una distribución uniforme con valores entre *[0,1]*, mientras que las opiniones para agentes con preferencia por B toman valores de una distribución uniforme entre *[-1,0]*. 
+
+Posteriormente, se actualiza el color de los agentes de acuerdo a la opinión asignada, y se actualizan las preferencias de voto por la opción A y por la opción B.
+
+# Datos de entrada
+
+El modelo no necesita del uso de datos de entrada.
+
+# Submodelos
+
+## Influencia positiva
+ Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
+
+```
+let x1-new (x1 + learning-rate * (x2 - x1))
+    let x2-new (x2 + learning-rate * (x1 - x2))
+    set opinion x1-new
+      ask other-patch [ set opinion x2-new] 
+```
+
+donde el parámetro *learning-rate* indica que tan rápido cambia la opinión de un     agente después de una interacción.
+
+## Confianza acotada
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
+
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+```
+  El nuevo parámetro a considerar es *confidence-threshold*, indicando la tolerancia que tiene cada agente para opiniones disimilares. El parámetro *learning-rate* actúa de la misma forma que en el modelo de influencia positiva. De esta manera, un agente ajusta su opinión solamente si interactua con otro agente con una opinión lo suficientemente cercana a la que ya posee. En caso contrario, la opinión de ambos agentes en la interacción se mantiene igual.
+
+## Influencia negativa
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
+
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+      if (abs (x1 - x2) > confidence-threshold)[ 
+        ifelse (x1 > x2)
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+      ]
+```
+
+En este caso la interacción se ve dominada por el parámetro *confidence-threshold*. Si la diferencia de las opiniones es menor al valor de *confidence-threshold*, entonces ambos ajustan su opinión para ser más cercanas de acuerdo al valor del *learning-rate*. Sin embargo, si la diferencia entre opiniones es mayor a el valor de *confidence-threshold*, entonces ambos agentes alejan sus opiniones de acuerdo al valor del parámetro *learning-rate*.
+
+
+## Conversión de opinión a preferencia de voto
+Para convertir la opinión a preferencia de voto, se toma una opinión mayor a cero como la preferencia por el candidato A, y una opinión negativa como preferencia por el candidato B. De esta forma, para actualizar las preferencias globales de los agentes presentes en el modelo se tiene la siguiente fórmula.
+
+```
+  set pref-A (count patches with [opinion > 0] )
+  set pref-B (count patches with [opinion < 0] )
+``` 
+
+El total de agentes con opinión mayor a cero se cuenta como el total de la población con la intención de votar por la opción A, mientra que el total de agentes con opinión menor a cero se cuenta como el número de agentes con la intención de votar por la opción B.
+
+
+## Referencias
+
+Trabajo basado en los modelos de influencia positivam, negativa y acotada encontrados en:
+
+* Paul Smaldino. (2024). psmaldino/modsoc: Modeling Social Behavior (v1.0). Zenodo. https://doi.org/10.5281/zenodo.11245354
+]]></info>
+  <turtleShapes>
+    <shape name="default" rotatable="true" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="5"></point>
+        <point x="40" y="250"></point>
+        <point x="150" y="205"></point>
+        <point x="260" y="250"></point>
+      </polygon>
+    </shape>
+    <shape name="airplane" rotatable="true" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="0"></point>
+        <point x="135" y="15"></point>
+        <point x="120" y="60"></point>
+        <point x="120" y="105"></point>
+        <point x="15" y="165"></point>
+        <point x="15" y="195"></point>
+        <point x="120" y="180"></point>
+        <point x="135" y="240"></point>
+        <point x="105" y="270"></point>
+        <point x="120" y="285"></point>
+        <point x="150" y="270"></point>
+        <point x="180" y="285"></point>
+        <point x="210" y="270"></point>
+        <point x="165" y="240"></point>
+        <point x="180" y="180"></point>
+        <point x="285" y="195"></point>
+        <point x="285" y="165"></point>
+        <point x="180" y="105"></point>
+        <point x="180" y="60"></point>
+        <point x="165" y="15"></point>
+      </polygon>
+    </shape>
+    <shape name="arrow" rotatable="true" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="0"></point>
+        <point x="0" y="150"></point>
+        <point x="105" y="150"></point>
+        <point x="105" y="293"></point>
+        <point x="195" y="293"></point>
+        <point x="195" y="150"></point>
+        <point x="300" y="150"></point>
+      </polygon>
+    </shape>
+    <shape name="box" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="285"></point>
+        <point x="285" y="225"></point>
+        <point x="285" y="75"></point>
+        <point x="150" y="135"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="135"></point>
+        <point x="15" y="75"></point>
+        <point x="150" y="15"></point>
+        <point x="285" y="75"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="15" y="75"></point>
+        <point x="15" y="225"></point>
+        <point x="150" y="285"></point>
+        <point x="150" y="135"></point>
+      </polygon>
+      <line endX="150" startY="285" marked="false" color="255" endY="135" startX="150"></line>
+      <line endX="15" startY="135" marked="false" color="255" endY="75" startX="150"></line>
+      <line endX="285" startY="135" marked="false" color="255" endY="75" startX="150"></line>
+    </shape>
+    <shape name="bug" rotatable="true" editableColorIndex="0">
+      <circle x="96" y="182" marked="true" color="-1920102913" diameter="108" filled="true"></circle>
+      <circle x="110" y="127" marked="true" color="-1920102913" diameter="80" filled="true"></circle>
+      <circle x="110" y="75" marked="true" color="-1920102913" diameter="80" filled="true"></circle>
+      <line endX="80" startY="100" marked="true" color="-1920102913" endY="30" startX="150"></line>
+      <line endX="220" startY="100" marked="true" color="-1920102913" endY="30" startX="150"></line>
+    </shape>
+    <shape name="butterfly" rotatable="true" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="165"></point>
+        <point x="209" y="199"></point>
+        <point x="225" y="225"></point>
+        <point x="225" y="255"></point>
+        <point x="195" y="270"></point>
+        <point x="165" y="255"></point>
+        <point x="150" y="240"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="165"></point>
+        <point x="89" y="198"></point>
+        <point x="75" y="225"></point>
+        <point x="75" y="255"></point>
+        <point x="105" y="270"></point>
+        <point x="135" y="255"></point>
+        <point x="150" y="240"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="139" y="148"></point>
+        <point x="100" y="105"></point>
+        <point x="55" y="90"></point>
+        <point x="25" y="90"></point>
+        <point x="10" y="105"></point>
+        <point x="10" y="135"></point>
+        <point x="25" y="180"></point>
+        <point x="40" y="195"></point>
+        <point x="85" y="194"></point>
+        <point x="139" y="163"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="162" y="150"></point>
+        <point x="200" y="105"></point>
+        <point x="245" y="90"></point>
+        <point x="275" y="90"></point>
+        <point x="290" y="105"></point>
+        <point x="290" y="135"></point>
+        <point x="275" y="180"></point>
+        <point x="260" y="195"></point>
+        <point x="215" y="195"></point>
+        <point x="162" y="165"></point>
+      </polygon>
+      <polygon color="255" filled="true" marked="false">
+        <point x="150" y="255"></point>
+        <point x="135" y="225"></point>
+        <point x="120" y="150"></point>
+        <point x="135" y="120"></point>
+        <point x="150" y="105"></point>
+        <point x="165" y="120"></point>
+        <point x="180" y="150"></point>
+        <point x="165" y="225"></point>
+      </polygon>
+      <circle x="135" y="90" marked="false" color="255" diameter="30" filled="true"></circle>
+      <line endX="195" startY="105" marked="false" color="255" endY="60" startX="150"></line>
+      <line endX="105" startY="105" marked="false" color="255" endY="60" startX="150"></line>
+    </shape>
+    <shape name="car" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="300" y="180"></point>
+        <point x="279" y="164"></point>
+        <point x="261" y="144"></point>
+        <point x="240" y="135"></point>
+        <point x="226" y="132"></point>
+        <point x="213" y="106"></point>
+        <point x="203" y="84"></point>
+        <point x="185" y="63"></point>
+        <point x="159" y="50"></point>
+        <point x="135" y="50"></point>
+        <point x="75" y="60"></point>
+        <point x="0" y="150"></point>
+        <point x="0" y="165"></point>
+        <point x="0" y="225"></point>
+        <point x="300" y="225"></point>
+        <point x="300" y="180"></point>
+      </polygon>
+      <circle x="180" y="180" marked="false" color="255" diameter="90" filled="true"></circle>
+      <circle x="30" y="180" marked="false" color="255" diameter="90" filled="true"></circle>
+      <polygon color="255" filled="true" marked="false">
+        <point x="162" y="80"></point>
+        <point x="132" y="78"></point>
+        <point x="134" y="135"></point>
+        <point x="209" y="135"></point>
+        <point x="194" y="105"></point>
+        <point x="189" y="96"></point>
+        <point x="180" y="89"></point>
+      </polygon>
+      <circle x="47" y="195" marked="true" color="-1920102913" diameter="58" filled="true"></circle>
+      <circle x="195" y="195" marked="true" color="-1920102913" diameter="58" filled="true"></circle>
+    </shape>
+    <shape name="circle" rotatable="false" editableColorIndex="0">
+      <circle x="0" y="0" marked="true" color="-1920102913" diameter="300" filled="true"></circle>
+    </shape>
+    <shape name="circle 2" rotatable="false" editableColorIndex="0">
+      <circle x="0" y="0" marked="true" color="-1920102913" diameter="300" filled="true"></circle>
+      <circle x="30" y="30" marked="false" color="255" diameter="240" filled="true"></circle>
+    </shape>
+    <shape name="cow" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="200" y="193"></point>
+        <point x="197" y="249"></point>
+        <point x="179" y="249"></point>
+        <point x="177" y="196"></point>
+        <point x="166" y="187"></point>
+        <point x="140" y="189"></point>
+        <point x="93" y="191"></point>
+        <point x="78" y="179"></point>
+        <point x="72" y="211"></point>
+        <point x="49" y="209"></point>
+        <point x="48" y="181"></point>
+        <point x="37" y="149"></point>
+        <point x="25" y="120"></point>
+        <point x="25" y="89"></point>
+        <point x="45" y="72"></point>
+        <point x="103" y="84"></point>
+        <point x="179" y="75"></point>
+        <point x="198" y="76"></point>
+        <point x="252" y="64"></point>
+        <point x="272" y="81"></point>
+        <point x="293" y="103"></point>
+        <point x="285" y="121"></point>
+        <point x="255" y="121"></point>
+        <point x="242" y="118"></point>
+        <point x="224" y="167"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="73" y="210"></point>
+        <point x="86" y="251"></point>
+        <point x="62" y="249"></point>
+        <point x="48" y="208"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="25" y="114"></point>
+        <point x="16" y="195"></point>
+        <point x="9" y="204"></point>
+        <point x="23" y="213"></point>
+        <point x="25" y="200"></point>
+        <point x="39" y="123"></point>
+      </polygon>
+    </shape>
+    <shape name="cylinder" rotatable="false" editableColorIndex="0">
+      <circle x="0" y="0" marked="true" color="-1920102913" diameter="300" filled="true"></circle>
+    </shape>
+    <shape name="dot" rotatable="false" editableColorIndex="0">
+      <circle x="90" y="90" marked="true" color="-1920102913" diameter="120" filled="true"></circle>
+    </shape>
+    <shape name="face happy" rotatable="false" editableColorIndex="0">
+      <circle x="8" y="8" marked="true" color="-1920102913" diameter="285" filled="true"></circle>
+      <circle x="60" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <circle x="180" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <polygon color="255" filled="true" marked="false">
+        <point x="150" y="255"></point>
+        <point x="90" y="239"></point>
+        <point x="62" y="213"></point>
+        <point x="47" y="191"></point>
+        <point x="67" y="179"></point>
+        <point x="90" y="203"></point>
+        <point x="109" y="218"></point>
+        <point x="150" y="225"></point>
+        <point x="192" y="218"></point>
+        <point x="210" y="203"></point>
+        <point x="227" y="181"></point>
+        <point x="251" y="194"></point>
+        <point x="236" y="217"></point>
+        <point x="212" y="240"></point>
+      </polygon>
+    </shape>
+    <shape name="face neutral" rotatable="false" editableColorIndex="0">
+      <circle x="8" y="7" marked="true" color="-1920102913" diameter="285" filled="true"></circle>
+      <circle x="60" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <circle x="180" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <rectangle endX="240" startY="195" marked="false" color="255" endY="225" startX="60" filled="true"></rectangle>
+    </shape>
+    <shape name="face sad" rotatable="false" editableColorIndex="0">
+      <circle x="8" y="8" marked="true" color="-1920102913" diameter="285" filled="true"></circle>
+      <circle x="60" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <circle x="180" y="75" marked="false" color="255" diameter="60" filled="true"></circle>
+      <polygon color="255" filled="true" marked="false">
+        <point x="150" y="168"></point>
+        <point x="90" y="184"></point>
+        <point x="62" y="210"></point>
+        <point x="47" y="232"></point>
+        <point x="67" y="244"></point>
+        <point x="90" y="220"></point>
+        <point x="109" y="205"></point>
+        <point x="150" y="198"></point>
+        <point x="192" y="205"></point>
+        <point x="210" y="220"></point>
+        <point x="227" y="242"></point>
+        <point x="251" y="229"></point>
+        <point x="236" y="206"></point>
+        <point x="212" y="183"></point>
+      </polygon>
+    </shape>
+    <shape name="fish" rotatable="false" editableColorIndex="0">
+      <polygon color="-1" filled="true" marked="false">
+        <point x="44" y="131"></point>
+        <point x="21" y="87"></point>
+        <point x="15" y="86"></point>
+        <point x="0" y="120"></point>
+        <point x="15" y="150"></point>
+        <point x="0" y="180"></point>
+        <point x="13" y="214"></point>
+        <point x="20" y="212"></point>
+        <point x="45" y="166"></point>
+      </polygon>
+      <polygon color="-1" filled="true" marked="false">
+        <point x="135" y="195"></point>
+        <point x="119" y="235"></point>
+        <point x="95" y="218"></point>
+        <point x="76" y="210"></point>
+        <point x="46" y="204"></point>
+        <point x="60" y="165"></point>
+      </polygon>
+      <polygon color="-1" filled="true" marked="false">
+        <point x="75" y="45"></point>
+        <point x="83" y="77"></point>
+        <point x="71" y="103"></point>
+        <point x="86" y="114"></point>
+        <point x="166" y="78"></point>
+        <point x="135" y="60"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="30" y="136"></point>
+        <point x="151" y="77"></point>
+        <point x="226" y="81"></point>
+        <point x="280" y="119"></point>
+        <point x="292" y="146"></point>
+        <point x="292" y="160"></point>
+        <point x="287" y="170"></point>
+        <point x="270" y="195"></point>
+        <point x="195" y="210"></point>
+        <point x="151" y="212"></point>
+        <point x="30" y="166"></point>
+      </polygon>
+      <circle x="215" y="106" marked="false" color="255" diameter="30" filled="true"></circle>
+    </shape>
+    <shape name="flag" rotatable="false" editableColorIndex="0">
+      <rectangle endX="75" startY="15" marked="true" color="-1920102913" endY="300" startX="60" filled="true"></rectangle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="90" y="150"></point>
+        <point x="270" y="90"></point>
+        <point x="90" y="30"></point>
+      </polygon>
+      <line endX="90" startY="135" marked="true" color="-1920102913" endY="135" startX="75"></line>
+      <line endX="90" startY="45" marked="true" color="-1920102913" endY="45" startX="75"></line>
+    </shape>
+    <shape name="flower" rotatable="false" editableColorIndex="0">
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="135" y="120"></point>
+        <point x="165" y="165"></point>
+        <point x="180" y="210"></point>
+        <point x="180" y="240"></point>
+        <point x="150" y="300"></point>
+        <point x="165" y="300"></point>
+        <point x="195" y="240"></point>
+        <point x="195" y="195"></point>
+        <point x="165" y="135"></point>
+      </polygon>
+      <circle x="85" y="132" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="130" y="147" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="192" y="85" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="85" y="40" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="177" y="40" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="177" y="132" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="70" y="85" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="130" y="25" marked="true" color="-1920102913" diameter="38" filled="true"></circle>
+      <circle x="96" y="51" marked="true" color="-1920102913" diameter="108" filled="true"></circle>
+      <circle x="113" y="68" marked="false" color="255" diameter="74" filled="true"></circle>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="189" y="233"></point>
+        <point x="219" y="188"></point>
+        <point x="249" y="173"></point>
+        <point x="279" y="188"></point>
+        <point x="234" y="218"></point>
+      </polygon>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="180" y="255"></point>
+        <point x="150" y="210"></point>
+        <point x="105" y="210"></point>
+        <point x="75" y="240"></point>
+        <point x="135" y="240"></point>
+      </polygon>
+    </shape>
+    <shape name="house" rotatable="false" editableColorIndex="0">
+      <rectangle endX="255" startY="120" marked="true" color="-1920102913" endY="285" startX="45" filled="true"></rectangle>
+      <rectangle endX="180" startY="210" marked="false" color="255" endY="285" startX="120" filled="true"></rectangle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="15" y="120"></point>
+        <point x="150" y="15"></point>
+        <point x="285" y="120"></point>
+      </polygon>
+      <line endX="270" startY="120" marked="false" color="255" endY="120" startX="30"></line>
+    </shape>
+    <shape name="leaf" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="210"></point>
+        <point x="135" y="195"></point>
+        <point x="120" y="210"></point>
+        <point x="60" y="210"></point>
+        <point x="30" y="195"></point>
+        <point x="60" y="180"></point>
+        <point x="60" y="165"></point>
+        <point x="15" y="135"></point>
+        <point x="30" y="120"></point>
+        <point x="15" y="105"></point>
+        <point x="40" y="104"></point>
+        <point x="45" y="90"></point>
+        <point x="60" y="90"></point>
+        <point x="90" y="105"></point>
+        <point x="105" y="120"></point>
+        <point x="120" y="120"></point>
+        <point x="105" y="60"></point>
+        <point x="120" y="60"></point>
+        <point x="135" y="30"></point>
+        <point x="150" y="15"></point>
+        <point x="165" y="30"></point>
+        <point x="180" y="60"></point>
+        <point x="195" y="60"></point>
+        <point x="180" y="120"></point>
+        <point x="195" y="120"></point>
+        <point x="210" y="105"></point>
+        <point x="240" y="90"></point>
+        <point x="255" y="90"></point>
+        <point x="263" y="104"></point>
+        <point x="285" y="105"></point>
+        <point x="270" y="120"></point>
+        <point x="285" y="135"></point>
+        <point x="240" y="165"></point>
+        <point x="240" y="180"></point>
+        <point x="270" y="195"></point>
+        <point x="240" y="210"></point>
+        <point x="180" y="210"></point>
+        <point x="165" y="195"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="135" y="195"></point>
+        <point x="135" y="240"></point>
+        <point x="120" y="255"></point>
+        <point x="105" y="255"></point>
+        <point x="105" y="285"></point>
+        <point x="135" y="285"></point>
+        <point x="165" y="240"></point>
+        <point x="165" y="195"></point>
+      </polygon>
+    </shape>
+    <shape name="line" rotatable="true" editableColorIndex="0">
+      <line endX="150" startY="0" marked="true" color="-1920102913" endY="300" startX="150"></line>
+    </shape>
+    <shape name="line half" rotatable="true" editableColorIndex="0">
+      <line endX="150" startY="0" marked="true" color="-1920102913" endY="150" startX="150"></line>
+    </shape>
+    <shape name="pentagon" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="15"></point>
+        <point x="15" y="120"></point>
+        <point x="60" y="285"></point>
+        <point x="240" y="285"></point>
+        <point x="285" y="120"></point>
+      </polygon>
+    </shape>
+    <shape name="person" rotatable="false" editableColorIndex="0">
+      <circle x="110" y="5" marked="true" color="-1920102913" diameter="80" filled="true"></circle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="105" y="90"></point>
+        <point x="120" y="195"></point>
+        <point x="90" y="285"></point>
+        <point x="105" y="300"></point>
+        <point x="135" y="300"></point>
+        <point x="150" y="225"></point>
+        <point x="165" y="300"></point>
+        <point x="195" y="300"></point>
+        <point x="210" y="285"></point>
+        <point x="180" y="195"></point>
+        <point x="195" y="90"></point>
+      </polygon>
+      <rectangle endX="172" startY="79" marked="true" color="-1920102913" endY="94" startX="127" filled="true"></rectangle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="195" y="90"></point>
+        <point x="240" y="150"></point>
+        <point x="225" y="180"></point>
+        <point x="165" y="105"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="105" y="90"></point>
+        <point x="60" y="150"></point>
+        <point x="75" y="180"></point>
+        <point x="135" y="105"></point>
+      </polygon>
+    </shape>
+    <shape name="plant" rotatable="false" editableColorIndex="0">
+      <rectangle endX="165" startY="90" marked="true" color="-1920102913" endY="300" startX="135" filled="true"></rectangle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="135" y="255"></point>
+        <point x="90" y="210"></point>
+        <point x="45" y="195"></point>
+        <point x="75" y="255"></point>
+        <point x="135" y="285"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="165" y="255"></point>
+        <point x="210" y="210"></point>
+        <point x="255" y="195"></point>
+        <point x="225" y="255"></point>
+        <point x="165" y="285"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="135" y="180"></point>
+        <point x="90" y="135"></point>
+        <point x="45" y="120"></point>
+        <point x="75" y="180"></point>
+        <point x="135" y="210"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="165" y="180"></point>
+        <point x="165" y="210"></point>
+        <point x="225" y="180"></point>
+        <point x="255" y="120"></point>
+        <point x="210" y="135"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="135" y="105"></point>
+        <point x="90" y="60"></point>
+        <point x="45" y="45"></point>
+        <point x="75" y="105"></point>
+        <point x="135" y="135"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="165" y="105"></point>
+        <point x="165" y="135"></point>
+        <point x="225" y="105"></point>
+        <point x="255" y="45"></point>
+        <point x="210" y="60"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="135" y="90"></point>
+        <point x="120" y="45"></point>
+        <point x="150" y="15"></point>
+        <point x="180" y="45"></point>
+        <point x="165" y="90"></point>
+      </polygon>
+    </shape>
+    <shape name="sheep" rotatable="false" editableColorIndex="15">
+      <circle x="203" y="65" marked="true" color="-1" diameter="88" filled="true"></circle>
+      <circle x="70" y="65" marked="true" color="-1" diameter="162" filled="true"></circle>
+      <circle x="150" y="105" marked="true" color="-1" diameter="120" filled="true"></circle>
+      <polygon color="-1920102913" filled="true" marked="false">
+        <point x="218" y="120"></point>
+        <point x="240" y="165"></point>
+        <point x="255" y="165"></point>
+        <point x="278" y="120"></point>
+      </polygon>
+      <circle x="214" y="72" marked="false" color="-1920102913" diameter="67" filled="true"></circle>
+      <rectangle endX="179" startY="223" marked="true" color="-1" endY="298" startX="164" filled="true"></rectangle>
+      <polygon color="-1" filled="true" marked="true">
+        <point x="45" y="285"></point>
+        <point x="30" y="285"></point>
+        <point x="30" y="240"></point>
+        <point x="15" y="195"></point>
+        <point x="45" y="210"></point>
+      </polygon>
+      <circle x="3" y="83" marked="true" color="-1" diameter="150" filled="true"></circle>
+      <rectangle endX="80" startY="221" marked="true" color="-1" endY="296" startX="65" filled="true"></rectangle>
+      <polygon color="-1" filled="true" marked="true">
+        <point x="195" y="285"></point>
+        <point x="210" y="285"></point>
+        <point x="210" y="240"></point>
+        <point x="240" y="210"></point>
+        <point x="195" y="210"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="false">
+        <point x="276" y="85"></point>
+        <point x="285" y="105"></point>
+        <point x="302" y="99"></point>
+        <point x="294" y="83"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="false">
+        <point x="219" y="85"></point>
+        <point x="210" y="105"></point>
+        <point x="193" y="99"></point>
+        <point x="201" y="83"></point>
+      </polygon>
+    </shape>
+    <shape name="square" rotatable="false" editableColorIndex="0">
+      <rectangle endX="270" startY="30" marked="true" color="-1920102913" endY="270" startX="30" filled="true"></rectangle>
+    </shape>
+    <shape name="square 2" rotatable="false" editableColorIndex="0">
+      <rectangle endX="270" startY="30" marked="true" color="-1920102913" endY="270" startX="30" filled="true"></rectangle>
+      <rectangle endX="240" startY="60" marked="false" color="255" endY="240" startX="60" filled="true"></rectangle>
+    </shape>
+    <shape name="star" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="151" y="1"></point>
+        <point x="185" y="108"></point>
+        <point x="298" y="108"></point>
+        <point x="207" y="175"></point>
+        <point x="242" y="282"></point>
+        <point x="151" y="216"></point>
+        <point x="59" y="282"></point>
+        <point x="94" y="175"></point>
+        <point x="3" y="108"></point>
+        <point x="116" y="108"></point>
+      </polygon>
+    </shape>
+    <shape name="target" rotatable="false" editableColorIndex="0">
+      <circle x="0" y="0" marked="true" color="-1920102913" diameter="300" filled="true"></circle>
+      <circle x="30" y="30" marked="false" color="255" diameter="240" filled="true"></circle>
+      <circle x="60" y="60" marked="true" color="-1920102913" diameter="180" filled="true"></circle>
+      <circle x="90" y="90" marked="false" color="255" diameter="120" filled="true"></circle>
+      <circle x="120" y="120" marked="true" color="-1920102913" diameter="60" filled="true"></circle>
+    </shape>
+    <shape name="tree" rotatable="false" editableColorIndex="0">
+      <circle x="118" y="3" marked="true" color="-1920102913" diameter="94" filled="true"></circle>
+      <rectangle endX="180" startY="195" marked="false" color="-1653716737" endY="300" startX="120" filled="true"></rectangle>
+      <circle x="65" y="21" marked="true" color="-1920102913" diameter="108" filled="true"></circle>
+      <circle x="116" y="41" marked="true" color="-1920102913" diameter="127" filled="true"></circle>
+      <circle x="45" y="90" marked="true" color="-1920102913" diameter="120" filled="true"></circle>
+      <circle x="104" y="74" marked="true" color="-1920102913" diameter="152" filled="true"></circle>
+    </shape>
+    <shape name="triangle" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="30"></point>
+        <point x="15" y="255"></point>
+        <point x="285" y="255"></point>
+      </polygon>
+    </shape>
+    <shape name="triangle 2" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="150" y="30"></point>
+        <point x="15" y="255"></point>
+        <point x="285" y="255"></point>
+      </polygon>
+      <polygon color="255" filled="true" marked="false">
+        <point x="151" y="99"></point>
+        <point x="225" y="223"></point>
+        <point x="75" y="224"></point>
+      </polygon>
+    </shape>
+    <shape name="truck" rotatable="false" editableColorIndex="0">
+      <rectangle endX="195" startY="45" marked="true" color="-1920102913" endY="187" startX="4" filled="true"></rectangle>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="296" y="193"></point>
+        <point x="296" y="150"></point>
+        <point x="259" y="134"></point>
+        <point x="244" y="104"></point>
+        <point x="208" y="104"></point>
+        <point x="207" y="194"></point>
+      </polygon>
+      <rectangle endX="195" startY="60" marked="false" color="-1" endY="105" startX="195" filled="true"></rectangle>
+      <polygon color="255" filled="true" marked="false">
+        <point x="238" y="112"></point>
+        <point x="252" y="141"></point>
+        <point x="219" y="141"></point>
+        <point x="218" y="112"></point>
+      </polygon>
+      <circle x="234" y="174" marked="false" color="255" diameter="42" filled="true"></circle>
+      <rectangle endX="214" startY="185" marked="true" color="-1920102913" endY="194" startX="181" filled="true"></rectangle>
+      <circle x="144" y="174" marked="false" color="255" diameter="42" filled="true"></circle>
+      <circle x="24" y="174" marked="false" color="255" diameter="42" filled="true"></circle>
+      <circle x="24" y="174" marked="true" color="-1920102913" diameter="42" filled="false"></circle>
+      <circle x="144" y="174" marked="true" color="-1920102913" diameter="42" filled="false"></circle>
+      <circle x="234" y="174" marked="true" color="-1920102913" diameter="42" filled="false"></circle>
+    </shape>
+    <shape name="turtle" rotatable="true" editableColorIndex="0">
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="215" y="204"></point>
+        <point x="240" y="233"></point>
+        <point x="246" y="254"></point>
+        <point x="228" y="266"></point>
+        <point x="215" y="252"></point>
+        <point x="193" y="210"></point>
+      </polygon>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="195" y="90"></point>
+        <point x="225" y="75"></point>
+        <point x="245" y="75"></point>
+        <point x="260" y="89"></point>
+        <point x="269" y="108"></point>
+        <point x="261" y="124"></point>
+        <point x="240" y="105"></point>
+        <point x="225" y="105"></point>
+        <point x="210" y="105"></point>
+      </polygon>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="105" y="90"></point>
+        <point x="75" y="75"></point>
+        <point x="55" y="75"></point>
+        <point x="40" y="89"></point>
+        <point x="31" y="108"></point>
+        <point x="39" y="124"></point>
+        <point x="60" y="105"></point>
+        <point x="75" y="105"></point>
+        <point x="90" y="105"></point>
+      </polygon>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="132" y="85"></point>
+        <point x="134" y="64"></point>
+        <point x="107" y="51"></point>
+        <point x="108" y="17"></point>
+        <point x="150" y="2"></point>
+        <point x="192" y="18"></point>
+        <point x="192" y="52"></point>
+        <point x="169" y="65"></point>
+        <point x="172" y="87"></point>
+      </polygon>
+      <polygon color="1504722175" filled="true" marked="false">
+        <point x="85" y="204"></point>
+        <point x="60" y="233"></point>
+        <point x="54" y="254"></point>
+        <point x="72" y="266"></point>
+        <point x="85" y="252"></point>
+        <point x="107" y="210"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="119" y="75"></point>
+        <point x="179" y="75"></point>
+        <point x="209" y="101"></point>
+        <point x="224" y="135"></point>
+        <point x="220" y="225"></point>
+        <point x="175" y="261"></point>
+        <point x="128" y="261"></point>
+        <point x="81" y="224"></point>
+        <point x="74" y="135"></point>
+        <point x="88" y="99"></point>
+      </polygon>
+    </shape>
+    <shape name="wheel" rotatable="false" editableColorIndex="0">
+      <circle x="3" y="3" marked="true" color="-1920102913" diameter="294" filled="true"></circle>
+      <circle x="30" y="30" marked="false" color="255" diameter="240" filled="true"></circle>
+      <line endX="150" startY="285" marked="true" color="-1920102913" endY="15" startX="150"></line>
+      <line endX="285" startY="150" marked="true" color="-1920102913" endY="150" startX="15"></line>
+      <circle x="120" y="120" marked="true" color="-1920102913" diameter="60" filled="true"></circle>
+      <line endX="79" startY="40" marked="true" color="-1920102913" endY="269" startX="216"></line>
+      <line endX="269" startY="84" marked="true" color="-1920102913" endY="221" startX="40"></line>
+      <line endX="269" startY="216" marked="true" color="-1920102913" endY="79" startX="40"></line>
+      <line endX="221" startY="40" marked="true" color="-1920102913" endY="269" startX="84"></line>
+    </shape>
+    <shape name="wolf" rotatable="false" editableColorIndex="0">
+      <polygon color="255" filled="true" marked="false">
+        <point x="253" y="133"></point>
+        <point x="245" y="131"></point>
+        <point x="245" y="133"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="2" y="194"></point>
+        <point x="13" y="197"></point>
+        <point x="30" y="191"></point>
+        <point x="38" y="193"></point>
+        <point x="38" y="205"></point>
+        <point x="20" y="226"></point>
+        <point x="20" y="257"></point>
+        <point x="27" y="265"></point>
+        <point x="38" y="266"></point>
+        <point x="40" y="260"></point>
+        <point x="31" y="253"></point>
+        <point x="31" y="230"></point>
+        <point x="60" y="206"></point>
+        <point x="68" y="198"></point>
+        <point x="75" y="209"></point>
+        <point x="66" y="228"></point>
+        <point x="65" y="243"></point>
+        <point x="82" y="261"></point>
+        <point x="84" y="268"></point>
+        <point x="100" y="267"></point>
+        <point x="103" y="261"></point>
+        <point x="77" y="239"></point>
+        <point x="79" y="231"></point>
+        <point x="100" y="207"></point>
+        <point x="98" y="196"></point>
+        <point x="119" y="201"></point>
+        <point x="143" y="202"></point>
+        <point x="160" y="195"></point>
+        <point x="166" y="210"></point>
+        <point x="172" y="213"></point>
+        <point x="173" y="238"></point>
+        <point x="167" y="251"></point>
+        <point x="160" y="248"></point>
+        <point x="154" y="265"></point>
+        <point x="169" y="264"></point>
+        <point x="178" y="247"></point>
+        <point x="186" y="240"></point>
+        <point x="198" y="260"></point>
+        <point x="200" y="271"></point>
+        <point x="217" y="271"></point>
+        <point x="219" y="262"></point>
+        <point x="207" y="258"></point>
+        <point x="195" y="230"></point>
+        <point x="192" y="198"></point>
+        <point x="210" y="184"></point>
+        <point x="227" y="164"></point>
+        <point x="242" y="144"></point>
+        <point x="259" y="145"></point>
+        <point x="284" y="151"></point>
+        <point x="277" y="141"></point>
+        <point x="293" y="140"></point>
+        <point x="299" y="134"></point>
+        <point x="297" y="127"></point>
+        <point x="273" y="119"></point>
+        <point x="270" y="105"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="-1" y="195"></point>
+        <point x="14" y="180"></point>
+        <point x="36" y="166"></point>
+        <point x="40" y="153"></point>
+        <point x="53" y="140"></point>
+        <point x="82" y="131"></point>
+        <point x="134" y="133"></point>
+        <point x="159" y="126"></point>
+        <point x="188" y="115"></point>
+        <point x="227" y="108"></point>
+        <point x="236" y="102"></point>
+        <point x="238" y="98"></point>
+        <point x="268" y="86"></point>
+        <point x="269" y="92"></point>
+        <point x="281" y="87"></point>
+        <point x="269" y="103"></point>
+        <point x="269" y="113"></point>
+      </polygon>
+    </shape>
+    <shape name="x" rotatable="false" editableColorIndex="0">
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="270" y="75"></point>
+        <point x="225" y="30"></point>
+        <point x="30" y="225"></point>
+        <point x="75" y="270"></point>
+      </polygon>
+      <polygon color="-1920102913" filled="true" marked="true">
+        <point x="30" y="75"></point>
+        <point x="75" y="30"></point>
+        <point x="270" y="225"></point>
+        <point x="225" y="270"></point>
+      </polygon>
+    </shape>
+  </turtleShapes>
+  <linkShapes>
+    <shape name="default" curviness="0.0">
+      <lines>
+        <line x="-0.2" visible="false">
+          <dash value="0.0"></dash>
+          <dash value="1.0"></dash>
+        </line>
+        <line x="0.0" visible="true">
+          <dash value="1.0"></dash>
+          <dash value="0.0"></dash>
+        </line>
+        <line x="0.2" visible="false">
+          <dash value="0.0"></dash>
+          <dash value="1.0"></dash>
+        </line>
+      </lines>
+      <indicator>
+        <shape name="link direction" rotatable="true" editableColorIndex="0">
+          <line endX="90" startY="150" marked="true" color="-1920102913" endY="180" startX="150"></line>
+          <line endX="210" startY="150" marked="true" color="-1920102913" endY="180" startX="150"></line>
+        </shape>
+      </indicator>
+    </shape>
+  </linkShapes>
+  <previewCommands>setup repeat 75 [ go ]</previewCommands>
+  <experiments>
+    <experiment name="experimento-1-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-agents-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.71"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="30"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-2-positiva-5-agents" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.53"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-3-positiva" repetitions="10" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.1" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="10" last="1070"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-4-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0.5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-5-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.01" last="0.3"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="25"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0.5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-sexo" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric><![CDATA[count patches with [sex = 1 and opinion > 0]]]></metric>
+        <metric><![CDATA[count patches with [sex = 2 and opinion > 0]]]></metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.58"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-1-negativa" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;negative&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-2-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.42"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="100"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;negative&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-3-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.42"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="8"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;negative&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-1-BC" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;BC&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-2-BC" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.58"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="50"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;BC&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-3-BC" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.58"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="7"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;BC&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-patrones-edad" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric><![CDATA[count (patches with [sex = 1 and opinion > 0])]]></metric>
+        <metric><![CDATA[; count (patches with [sex = 1 and opinion < 0])]]></metric>
+        <metric><![CDATA[count (patches with [sex = 2 and opinion > 0])]]></metric>
+        <metric><![CDATA[; count (patches with [sex = 2 and opinion < 0])]]></metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.71"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+  </experiments>
+  <systemDynamics dt="1.0">
+    <stock name="" allowNegative="true" x="339" y="75"></stock>
+    <converter name="" x="458" y="159"></converter>
+  </systemDynamics>
+</model>
