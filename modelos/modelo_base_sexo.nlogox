@@ -2,37 +2,29 @@
 <model version="NetLogo 7.0.2" snapToGrid="false">
   <code><![CDATA[extensions [ csv ]
 globals [ 
- ; influence-type
- ; percent-option-B
- ; agents-updated-per-tick 
- ; total-ticks
- ; export-opinions?
- pref-A
- pref-B
+  ; influence-type
+  ; pairs-per-tick 
+  ; total-ticks
+  ; export-opinions?
+  ; neighbors-interactions?
+  pref-A
+  pref-B
 ]
-; turtles-own [opinion]
 
 patches-own [
   opinion
   sex ; total de 513 male patches, 557 female
 ]
 
-;;Crear una tortuga por patch y dar opinión inicial aleatoria
 to setup
   clear-all
-;  ask patches[
-;    sprout 1[
-;     ; set opinion (random-float 2) - 1 ;;opinión inicial uniforme entre [-1, 1]
-;      set shape "circle"
-;    ]
-;  ]
-  initial-sex
-  initial-opinions
+  initial-sex ; Proporcion de sexo en base a datos
+  initial-opinions ; Preferencia en base al sexo de los agentes
   update-colors ;;colorear de acuerdo a opinión
   update-preferences ;; Contar agentes con preferencia por A y por B
   reset-ticks
   
-  if export-opinions? [
+  if export-opinions? [ ; Exportar opiniones a un csv externo. Muy pesado
     setup-opinions-file
     file-open "agents_opinions.csv"
     register-opinions
@@ -40,7 +32,7 @@ to setup
   ]
 end
 
-to initial-opinions ; Ahora las opiniones iniciales se dan en base al sexom, no de forma aleatoria
+to initial-opinions ; Opiniones iniciales se en base al sexo
   ask patches [set opinion 1000] ; Inicio dando una opinion dummy a todos los agentes
   ; Resulta mas eficaz calcular los numeros de forma explicita, en vez de hacer calculos en NetLogo
   ask n-of 210 patches with [sex = "M"] [ ; Le damos opinion a los hombres
@@ -68,9 +60,14 @@ end
 
 
 to go
-  ;; Selección aleatoria de pares para interactuar
-  ask n-of agents-updated-per-tick patches [
-    let other-patch one-of other patches 
+  ;; Selección de agentes aleatoria o por vecinos
+  ask n-of pairs-per-tick patches [
+    
+    let other-patch one-of other patches ; Primero se inicia eligiendo un patch al azar por los quiks de Netlogo     
+    
+    if neighbors-interactions? [ ; Ahora revisamos si necesitamos que sean estrictamente vecinos
+      set other-patch one-of neighbors4 ; Se cambia a uno de los 4 vecinos
+    ]
     
     if influence-type = "positive" [ interact-positive other-patch ]
     if influence-type = "BC"       [ interact-BC other-patch ]
@@ -90,6 +87,7 @@ to go
     ] 
   ]
   
+  ; Terminar simulacion al alcanzar maximo numero de ticks
   if ticks = total-ticks [
     update-colors
     update-preferences
@@ -136,7 +134,7 @@ to interact-negative [target]
     set opinion x1-new
     ask target [ set opinion x2-new ]
   ]
-  [;; Caso 2: Son muy diferentes?
+  [;; Caso 2: Son muy diferentes? Las opiniones se alejan
     ifelse (x1 > x2)
         [
           let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
@@ -161,6 +159,7 @@ to update-colors
   ]
 end
 
+; Se prepara un archivo csv para guardar opiniones de los agentes
 to setup-opinions-file
   let file-name "agents_opinions.csv"
   
@@ -174,6 +173,7 @@ to setup-opinions-file
   file-close
 end
 
+; Al finalizar la ejecucion, se guarda la opinion de los agentes en el archivo 
 to register-opinions
   let all-opinions opinion-ordered-patches
   
@@ -191,54 +191,64 @@ to update-preferences
   set pref-B (count patches with [opinion < 0] )
 end
 
+; Porcentaje general de agentes con preferencia por A
 to-report percentage-A
   report (pref-A / count patches) * 100
 end
 
+; Porcentaje general de agentes con preferencia por B
 to-report percentage-B
   report (pref-B / count patches) * 100
 end
 
+; Total de agentes hombre con preferencia por A
 to-report male-pref-A
   report (count patches with [opinion > 0 and sex = "M"])
 end
 
+; Porcentaje de agentes hombre con preferencia por A
 to-report male-percentage-A
   report male-pref-A / 513 * 100
 end
 
+; Total de agentes mujer con preferencia por A
 to-report female-pref-A
   report (count patches with [opinion > 0 and sex = "F"])
 end
 
+; Porcentaje de agentes mujer con preferencia por A
 to-report female-percentage-A
   report female-pref-A / 557 * 100
 end
 
+; Total de agentes hombre con preferencia por B
 to-report male-pref-B
   report (count patches with [opinion < 0 and sex = "M"])
 end
 
+; Porcentaje de agentes hombre con preferencia por B
 to-report male-percentage-B
   report male-pref-B / 513 * 100
 end
 
+; Total de agentes mujer con preferencia por B
 to-report female-pref-B
   report (count patches with [opinion < 0 and sex = "F"])
 end
 
+; Porcentaje de agentes mujer con preferencia por B
 to-report female-percentage-B
   report female-pref-B / 557 * 100
 end
 
+; Ordena la opinion de los agentes patch antes de exportarla, de forma que se pueda
+; ver la evolucion individual de cada agente
 to-report opinion-ordered-patches
   let ordered-opinions map [ p -> [opinion] of p ] (sort patches)
   report ordered-opinions
 end]]></code>
   <widgets>
     <view x="269" wrappingAllowedX="false" y="14" frameRate="30.0" minPycor="-5" height="54" showTickCounter="true" patchSize="5.0" fontSize="10" wrappingAllowedY="false" width="539" tickCounterLabel="ticks" maxPycor="4" updateMode="0" maxPxcor="53" minPxcor="-53"></view>
-    <button x="52" y="31" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="66">setup</button>
-    <button x="138" y="32" height="40" disableUntilTicks="true" forever="true" kind="Observer" width="92">go</button>
     <plot x="597" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="opinions" y="85" xMin="0.0" height="199" legend="false" xMax="260.0" yMin="-1.0" width="382" xAxis="time" display="Agent opinions over time">
       <setup></setup>
       <update></update>
@@ -262,16 +272,14 @@ set-histogram-num-bars 40
         <update>histogram [opinion] of patches</update>
       </pen>
     </plot>
-    <slider x="17" step="0.1" y="222" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.8" variable="confidence-threshold"></slider>
-    <chooser x="17" y="150" height="60" variable="influence-type" current="1" width="250" display="influence-type">
+    <slider x="12" step="0.1" y="222" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.8" variable="confidence-threshold"></slider>
+    <chooser x="12" y="150" height="60" variable="influence-type" current="1" width="250" display="influence-type">
       <choice type="string" value="positive"></choice>
       <choice type="string" value="BC"></choice>
       <choice type="string" value="negative"></choice>
     </chooser>
-    <slider x="3" step=".01" y="87" max="0.5" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.1" variable="learning-rate"></slider>
-    <input x="169" multiline="false" y="83" height="60" variable="total-ticks" type="number" width="100">260.0</input>
     <switch x="841" y="20" height="40" on="false" variable="export-opinions?" width="124" display="export-opinions?"></switch>
-    <slider x="22" step="1" y="285" max="50" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="30.0" variable="agents-updated-per-tick"></slider>
+    <slider x="12" step="1" y="285" max="50" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="30.0" variable="pairs-per-tick"></slider>
     <plot x="280" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="296" xMin="0.0" height="175" legend="false" xMax="260.0" yMin="0.0" width="230" xAxis="Number of days" display="Preference over time">
       <setup></setup>
       <update></update>
@@ -309,6 +317,11 @@ set-histogram-num-bars 40
         <update>plot female-percentage-B</update>
       </pen>
     </plot>
+    <switch x="58" y="357" height="40" on="true" variable="neighbors-interactions?" width="159" display="neighbors-interactions?"></switch>
+    <button x="132" y="24" height="40" disableUntilTicks="true" forever="true" kind="Observer" width="92">go</button>
+    <button x="35" y="23" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="66">setup</button>
+    <slider x="3" step=".01" y="82" max="0.5" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.1" variable="learning-rate"></slider>
+    <input x="170" multiline="false" y="80" height="60" variable="total-ticks" type="number" width="100">260.0</input>
   </widgets>
   <info><![CDATA[# Propósito y patrones
 
