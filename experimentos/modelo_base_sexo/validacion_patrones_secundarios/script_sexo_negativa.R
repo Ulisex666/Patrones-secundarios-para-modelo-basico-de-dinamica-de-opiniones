@@ -101,6 +101,17 @@ patron_mujeres_distancia <- encuestas_preferencias_mujeres %>%
 # De la misma forma que se hizo para el patron principal, se calcula el RMSE
 # para el patron secundario de preferencia entre hombres y entre mujeres
 
+general_RMSE <- patron_sexo_negativa %>% 
+  inner_join(encuestas_preferencias_general, by = "tick") %>% # Se agregan las encuestas reales por tick
+  mutate( err_sq_A = (pct_A - pct_A_real)^2 # Se calcula el MSE
+  ) %>% 
+  group_by(run_number) %>% 
+  summarise(rmse_run = sqrt(mean(err_sq_A)),
+            .groups="drop")
+mean_RMSE_general = mean(general_RMSE$rmse_run) 
+sd_RMSE_general = sd(general_RMSE$rmse_run)
+
+
 hombre_RMSE <- patron_sexo_negativa %>% 
   inner_join(encuestas_preferencias_hombres, by = "tick") %>% # Se agregan las encuestas reales por tick
   mutate( err_sq_hombre_A = (male_pct_A - porcentaje_votos)^2 # Se calcula el MSE
@@ -109,6 +120,7 @@ hombre_RMSE <- patron_sexo_negativa %>%
   summarise(rmse_run = sqrt(mean(err_sq_hombre_A)),
             .groups="drop")
 mean_RMSE_hombres = mean(hombre_RMSE$rmse_run)
+sd_RMSE_hombres = sd(hombre_RMSE$rmse_run)
 
 mujer_RMSE <- patron_sexo_negativa %>% 
   inner_join(encuestas_preferencias_mujeres, by = "tick") %>% # Se agregan las encuestas reales por tick
@@ -118,7 +130,7 @@ mujer_RMSE <- patron_sexo_negativa %>%
   summarise(rmse_run = sqrt(mean(err_sq_hombre_A)),
             .groups="drop")
 mean_RMSE_mujeres = mean(mujer_RMSE$rmse_run)
-
+sd_RMSE_mujeres = sd(mujer_RMSE$rmse_run)
 #### Visualizacion de los resultados ####
 
 # Grafica del cambio de voto general
