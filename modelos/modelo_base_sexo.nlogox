@@ -272,7 +272,7 @@ set-histogram-num-bars 40
         <update>histogram [opinion] of patches</update>
       </pen>
     </plot>
-    <slider x="12" step="0.1" y="222" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.8" variable="confidence-threshold"></slider>
+    <slider x="12" step="0.1" y="222" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="1.0" variable="confidence-threshold"></slider>
     <chooser x="12" y="150" height="60" variable="influence-type" current="1" width="250" display="influence-type">
       <choice type="string" value="positive"></choice>
       <choice type="string" value="BC"></choice>
@@ -1423,6 +1423,60 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
         </enumeratedValueSet>
         <enumeratedValueSet variable="influence-type">
           <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="exploracion-parametros-vecinos-negativa" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>percentage-A</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <enumeratedValueSet variable="neighbors-interactions?">
+          <value value="true"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="export-opinions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="5" step="5" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0" step="0.1" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;negative&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="exploracion-parametros-vecinos-bc" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>percentage-A</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <enumeratedValueSet variable="neighbors-interactions?">
+          <value value="true"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="export-opinions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="5" step="5" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0" step="0.1" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;BC&quot;"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>

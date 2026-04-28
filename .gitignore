@@ -362,3 +362,5 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+experimentos/modelo_vecinos_sexo/exploracion de parametros/datos_csv/exploracion-parametros-vecinos-BC-table
+experimentos/modelo_vecinos_sexo/exploracion de parametros/datos_csv/exploracion-parametros-vecinos-negativa-table.csv
