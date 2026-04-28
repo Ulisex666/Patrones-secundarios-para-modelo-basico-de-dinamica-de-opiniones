@@ -20,7 +20,8 @@
 \usepackage{makecell}
 \usepackage{lipsum}
 \usepackage{multirow}
-% \usepackage{tikz} 
+\usepackage{tikz} 
+\usepackage{trees}
 %\usepackage{minted}
 % \usepackage{setspace}
 \usepackage{hyperref}
@@ -140,6 +141,8 @@
 	
 \end{frame}
 
+\subsection{Preference share by gender}
+
 \begin{frame}{Obtaining preference share by gender}
 	\begin{itemize}
 		\item Survey data is weighted to represent the proportions reported in the national electoral list, and this was taken into account while reducing the data to the two main options.
@@ -173,7 +176,7 @@
 
 
 \begin{frame}{Evolution of preference share by gender}
-	The evolution of the preference share for both genders is shown in the following table. We see almost no change for women, while men show an overall increase of support for B, which we seek to see replicated in the model.
+	The evolution of the preference share for both genders is shown in the following table. We see almost no change for women, while men show an increase and posterior decrease of support for A, which we seek to see replicated in the model.
 	\begin{table}[h]
 		\centering
 	\resizebox{0.8 \textwidth}{!}{
@@ -189,115 +192,279 @@
 			\bottomrule
 		\end{tabular}
 	}
+	\caption{Preference share by gender over three surveys.}
+	\label{tab:preferencia_genero}
 	\end{table}
 \end{frame}
 
-\begin{frame}{Evolution of preference share for men}
+\begin{frame}{Evolution of preference share for A by gender}
+	The preference evolution for A by gender is shown in the next figure. As we have reduced the model to only two options, we need to validate only one, as the other would be reciprocal.
 	\begin{figure}[h!]
 		\centering
-		\includegraphics[width=0.8\linewidth]{figs/evolution_preference_share_men}
+		\includegraphics[width=0.8\linewidth]{figs/evolution_preference_share_A_gender.png}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Evolution of preference share for women}
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=0.8\linewidth]{figs/evolution_preference_share_women}
-	\end{figure}
+%\begin{frame}{Evolution of preference share for women}
+%	\begin{figure}[h!]
+%		\centering
+%		\includegraphics[width=0.8\linewidth]{figs/evolution_preference_share_women}
+%	\end{figure}
+%\end{frame}
+
+%\begin{frame}{Age groups in electorate}
+%	The population is divided in four age groups, starting at 17 years old. The age share for the electorate on a nationwide level is shown in the following table, which is replicated in the polls by the use of a weighting factor. This proportion is maintained for the three surveys. 
+%	\begin{table}
+%		\resizebox{0.4 \textwidth}{!}{
+%		\begin{tabular}{c c}
+%			\toprule
+%			\textbf{Age group} & \textbf{\% of electorate} \\
+%			\midrule
+%			17-24 years old & 16 \\
+%			\midrule
+%			25-39 years old & 32 \\
+%			\midrule
+%			40-54 years old & 27 \\
+%			\midrule
+%			55+ years old & 25 \\
+%			\bottomrule
+%		\end{tabular}
+%	}
+%	\end{table}
+%\end{frame}
+%
+%\begin{frame}[allowframebreaks]{Preference share evolution by age group}
+%	The data was divided in the four considered age groups and afterwards the preference share for each subgroup was calculated for the three surveys. As such, we can see the change in support for option A and B over the three surveys.
+%	\begin{table}[h]
+%		\centering
+%		\resizebox{0.8 \textwidth}{!}{
+%		\begin{tabular}{llccc}
+%			\toprule
+%			\textbf{Age group} & \textbf{Option} & \textbf{Survey 1 (\%)} & \textbf{Survey 2 (\%)} & \textbf{Survey 3 (\%)} \\ 
+%			\midrule
+%			17-24
+%			& Option A & $59.8$ & $64.2$ & $56.1$ \\
+%			\midrule
+%			25-39
+%			& Option A & $68.2$ & $67.8$ & $65.1$ \\
+%			\midrule
+%			40-54 
+%			& Option A & $61.9$ & $67.6$ & $59.9$ \\
+%			\midrule
+%			55+ 
+%			& Option A & $ 50.8$ & $ 52.4$ & $58.8$ \\
+%			\bottomrule
+%		\end{tabular}
+%	}
+%	\caption{Preference share evolution for option A by age group.}
+%	\end{table}
+%	
+%	\begin{table}[h]
+%		\centering
+%		\resizebox{0.8 \textwidth}{!}{
+%			\begin{tabular}{llccc}
+%				\toprule
+%				\textbf{Age group} & \textbf{Option} & \textbf{Survey 1 (\%)} & \textbf{Survey 2 (\%)} & \textbf{Survey 3 (\%)} \\ 
+%				\midrule
+%				17-24
+%				& Option B & $40.2$ & $35.8$ & $43.9$ \\
+%				\midrule
+%				25-39
+%				& Option B & $31.8$ & $32.2$ & $34.9$ \\
+%				\midrule
+%				40-54 
+%				& Option B & $38.1$ & $32.4$ & $40.1$ \\
+%				\midrule
+%				55+ 
+%				& Option B & $49.2$ & $47.6$ & $41.2$ \\
+%				\bottomrule
+%			\end{tabular}
+%		}
+%		\caption{Preference share evolution for option B by age group.}
+%	\end{table}
+%\end{frame}
+%
+%\begin{frame}{Evolution of preference share for A by age group}
+%	\begin{figure}[h!]
+%		\centering
+%		\includegraphics[width=1\linewidth]{figs/evolution_preference_share_A_age}
+%	\end{figure}
+%\end{frame}
+%
+%\begin{frame}{Evolution of preference share for B by age group}
+%	\begin{figure}[h!]
+%		\centering
+%		\includegraphics[width=1\linewidth]{figs/evolution_preference_share_B_age}
+%	\end{figure}
+%\end{frame}
+
+\subsection{Validating secondary patterns: preference share by age}
+\begin{frame}{Changes to basic model}
+	\begin{itemize}
+		\item As a first step, the model will be modified to verify the preference share by gender, which will be validated with comparing the simulated results to the reported data.
+		\item To validate multiple patterns, the agent's present in the model must be modified to add gender as a variable, taking the gender proportion and preferences from the first poll.
+		\item The simulated data will be compared to the second and third poll measuring the RMSE. Given that the election data doesn't report results by gender, they will not be taken into account.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Age groups in electorate}
-	The population is divided in four age groups, starting at 17 years old. The age share for the electorate on a nationwide level is shown in the following table, which is replicated in the polls by the use of a weighting factor. This proportion is maintained for the three surveys. 
-	\begin{table}
-		\resizebox{0.4 \textwidth}{!}{
-		\begin{tabular}{c c}
-			\toprule
-			\textbf{Age group} & \textbf{\% of electorate} \\
-			\midrule
-			17-24 years old & 16 \\
-			\midrule
-			25-39 years old & 32 \\
-			\midrule
-			40-54 years old & 27 \\
-			\midrule
-			55+ years old & 25 \\
-			\bottomrule
-		\end{tabular}
-	}
-	\end{table}
-\end{frame}
-
-\begin{frame}[allowframebreaks]{Preference share evolution by age group}
-	The data was divided in the four considered age groups and afterwards the preference share for each subgroup was calculated for the three surveys. As such, we can see the change in support for option A and B over the three surveys.
-	\begin{table}[h]
-		\centering
-		\resizebox{0.8 \textwidth}{!}{
-		\begin{tabular}{llccc}
-			\toprule
-			\textbf{Age group} & \textbf{Option} & \textbf{Survey 1 (\%)} & \textbf{Survey 2 (\%)} & \textbf{Survey 3 (\%)} \\ 
-			\midrule
-			17-24
-			& Option A & $59.8$ & $64.2$ & $56.1$ \\
-			\midrule
-			25-39
-			& Option A & $68.2$ & $67.8$ & $65.1$ \\
-			\midrule
-			40-54 
-			& Option A & $61.9$ & $67.6$ & $59.9$ \\
-			\midrule
-			55+ 
-			& Option A & $ 50.8$ & $ 52.4$ & $58.8$ \\
-			\bottomrule
-		\end{tabular}
-	}
-	\caption{Preference share evolution for option A by age group.}
-	\end{table}
+\begin{frame}[allowframebreaks]{Initialization of gender and preference}
 	
-	\begin{table}[h]
-		\centering
+	\begin{itemize}
+		\item The model is initialized with $48\%$ of male agents and $52\%$ of female agents. following the registered electorate in the same way as the selected surveys. This proportion is kept constant during the time period considered in the model.
+		\item Breaking down the population by gender, the preferences for option A and B are taken from table \ref{tab:preferencia_genero}. 
+		\item The overall preference for A is $61\%$ and $39\%$ for B at the first time step, the same as the ones registered in the first survey and the ones utilized in the basic model. As such, both can be compared fairly.
+	\end{itemize}
+	
+	\begin{center}
 		\resizebox{0.8 \textwidth}{!}{
-			\begin{tabular}{llccc}
+		\begin{tikzpicture}[
+			grow=right,
+			level 1/.style={sibling distance=4cm, level distance=3.5cm},
+			level 2/.style={sibling distance=2cm, level distance=4.5cm},
+			every node/.style={draw, rounded corners, align=center, font=\small, inner sep=6pt},
+			edge from parent/.style={draw, ->, thick}
+			]
+			
+		
+			\node {Total Agents \\ $n = 1,070$}
+			child {
+				node {Women \\ 556 (52\%)}
+				child {
+					node {Option B \\ 212 (38\%)}
+				}
+				child {
+					node {Option A \\ 344 (62\%)}
+				}
+			}
+			child {
+				node {Men \\ 514 (48\%)}
+				child {
+					node {Option B \\ 211 (41\%)}
+				}
+				child {
+					node {Option A \\ 303 (59\%)}
+				}
+			};
+		\end{tikzpicture}
+		}
+	\end{center}
+\end{frame}
+
+\begin{frame}{Updated model interface}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.7\linewidth]{figs/updated_model}
+		\caption{Updated model after adding changes to initialization}
+		\label{fig:updated_model}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}{Interaction between agents}
+	\begin{itemize}
+		\item The main scheduling from the basic model hasn't been changed. As such, a certain number of pairs of agents are selected to interact every tick at random, not taking their gender into consideration.
+		\item Agents interact and change their opinion based on the simulated influence type. After 260 ticks, corresponding to the number of days since the first poll and the election, the model stops and the relevant data is captured.
+	\end{itemize}
+\end{frame}
+
+\section{Methodology}
+\begin{frame}{Comparison by type of influence}
+	\begin{itemize}
+		\item Taking the results from the basic model, the configuration with the lowest RMSE for each type of influence was selected. Each configuration was executed for 30 repetitions, and the general preference and preference by gender was recorded at each time step.
+		
+		\centering
+		\begin{table}
+			\resizebox{0.95 \textwidth}{!}{
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					& \textbf{Positive influence} & \textbf{Negative influence} & \textbf{Bounded confidence} \\
+					\hline
+					\textit{agents per tick} & 20 & 20 & 30 \\
+					\hline
+					\textit{learning rate} & 0.1 & 0.1 & 0.1 \\
+					\hline
+					\textit{confidence threshold} & - & 1 & 0.8 \\
+					\hline
+					\textit{RMSE} & $2.56 \pm 0.36$ & $2.4 \pm 0.23$ & $2.3 \pm 0.32$ \\
+					\hline
+				\end{tabular}
+			}
+		\caption{Configuration with the lowest RMSE by type of influence. Results from previous experiments.}
+		\end{table}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Measuring the error}
+	\begin{itemize}
+		\item The RMSE for general preference was measured, as well as the RMSE of preference by gender compared to the registered data. This is done taking into consideration only option A. Given that the values are reciprocal, the RMSE for option B will have the same value.
+		\item The preference share by gender is only measured compared to the second and third poll, not taking into account the final vote.
+		\item For the general preference we expect an RMSE similar to the one obtained in previous experiments, and a poor performance when sectioning the population by gender.
+	\end{itemize}
+\end{frame}
+
+\section{Results}
+\begin{frame}{Preference evolution for positive influence}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/positive_influence_evolution_gender}
+%		\caption{}
+		\label{fig:positiveinfluenceevolutiongender}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Preference evolution for negative influence}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/negative_influence_evolution_gender}
+%		\caption{}
+		\label{fig:negativeinfluenceevolutiongender}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Preference evolution for bounded confidence}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/bc_influence_evolution_gender.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{RMSE of patterns by type of influence}
+	The RMSE for all patterns considered in the modified model are shown. They represent the mean RMSE over 30 repetitions for every configuration, including the standard deviation.
+	\begin{center}
+		\resizebox{0.7 \textwidth}{!}{
+			\begin{tabular}{llc}
 				\toprule
-				\textbf{Age group} & \textbf{Option} & \textbf{Survey 1 (\%)} & \textbf{Survey 2 (\%)} & \textbf{Survey 3 (\%)} \\ 
+				\textbf{Influence type} & \textbf{Pattern} & \textbf{Mean RMSE}  \\ 
 				\midrule
-				17-24
-				& Option B & $40.2$ & $35.8$ & $43.9$ \\
+				\multirow{3}{*}{Positive}
+				& General preference & $2.54 \pm 0.38$  \\
+				& Male preference & $2.92 \pm 0.43 $ \\ 
+				& Female preference & $2.47 \pm 0.70$ \\
 				\midrule
-				25-39
-				& Option B & $31.8$ & $32.2$ & $34.9$ \\
+				\multirow{3}{*}{Negative}
+				& General preference & $2.82 \pm 0.35$  \\
+				& Male preference & $2.73 \pm 0.33$ \\ 
+				& Female preference & $1.70 \pm 0.61$ \\
 				\midrule
-				40-54 
-				& Option B & $38.1$ & $32.4$ & $40.1$ \\
-				\midrule
-				55+ 
-				& Option B & $49.2$ & $47.6$ & $41.2$ \\
+				\multirow{3}{*}{Bounded confidence}
+				& General preference & $2.51 \pm 0.37$  \\
+				& Male preference & $2.90 \pm 0.35$ \\ 
+				& Female preference & $2.36 \pm 0.57$ \\
 				\bottomrule
 			\end{tabular}
-		}
-		\caption{Preference share evolution for option B by age group.}
-	\end{table}
-\end{frame}
-
-\begin{frame}{Evolution of preference share for A by age group}
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=1\linewidth]{figs/evolution_preference_share_A_age}
-	\end{figure}
-\end{frame}
-
-\begin{frame}{Evolution of preference share for B by age group}
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=1\linewidth]{figs/evolution_preference_share_B_age}
-	\end{figure}
+		}	
+	\end{center}
 \end{frame}
 
 
-%TODO:
-% - Hacer el analisis de los datos por tipo de influencia, viendo el patron por edad
-% - Graficar, notando que solo reflejan el cambio de opinion global
-% - Grafica de la diferencia de preferencia por genero, viendo que se mantiene casi constante todo el periodo evaluado
-% - Lo mismo para un modelo unicamente con edades
+\section{Conclusions}
+\begin{frame}{Conclusions}
+	\begin{itemize}
+		\item The gender of the agents plays no part in the mechanism for selecting a partner to interact with. As expected, when the population is divided by gender and the preference evolution is calculated, it repeats the main pattern observed over the general population. This holds true for the three types of influence.
+		\item The mean RMSE is similar for the three patterns, and the model is incapable of reproducing more complex preference changes as the ones observed in the empirical male preference.
+		\item A more robust model must incorporate the agent's characteristics for the interaction mechanism, generating a more complex social network in the agents present in the model.
+	\end{itemize}
+\end{frame}
 \section{Bibliography}
 \begin{frame}[allowframebreaks]{Bibliography}
 	\bibliographystyle{plain}

@@ -14,7 +14,7 @@ globals [
 
 patches-own [
   opinion
-  sex ; total de 513 male patches, 557 female
+  age ; 161 de 17-24, 342 de 25-34, 278 de 40-54 y 289 de 55+
 ]
 
 ;;Crear una tortuga por patch y dar opinión inicial aleatoria
@@ -26,7 +26,7 @@ to setup
 ;      set shape "circle"
 ;    ]
 ;  ]
-  initial-sex
+  initial-age
   initial-opinions
   update-colors ;;colorear de acuerdo a opinión
   update-preferences ;; Contar agentes con preferencia por A y por B
@@ -40,54 +40,110 @@ to setup
   ]
 end
 
-to initial-opinions ; Ahora las opiniones iniciales se dan en base al sexom, no de forma aleatoria
+to initial-opinions ; Ahora las opiniones iniciales se dan en base al grupo de edad
   ask patches [set opinion 1000] ; Inicio dando una opinion dummy a todos los agentes
-  ; Resulta mas eficaz calcular los numeros de forma explicita, en vez de hacer calculos en NetLogo
-  ask n-of 210 patches with [sex = "M"] [ ; Le damos opinion a los hombres
+  ask n-of 64 patches with [age = "17-24"] [ ; Resulta mas eficaz calcular los numeros de forma explicita, en vez de hacer calculos en NetLogo
     set opinion random-float -1
   ]
-  ask n-of 303 patches with [opinion = 1000 and sex = "M"] [
+  ask patches with [age = "17-24" and opinion = 1000] [
+    set opinion random-float 1 
+  ]
+  ask n-of 109 patches with [age = "25-34"] [
+    set opinion random-float -1
+  ]
+  ask patches with [age = "25-34" and opinion = 1000] [
     set opinion random-float 1
   ]
-  ask n-of 212 patches with [sex = "F"] [ ; Le damos opinion a las mujeres
+    ask n-of 106 patches with [age = "40-54"] [
     set opinion random-float -1
   ]
-  ask n-of 345 patches with [opinion = 1000 and sex = "F"] [
+  ask patches with [age = "40-54" and opinion = 1000] [
+    set opinion random-float 1
+  ]
+    ask n-of 142 patches with [age = "55+"] [
+    set opinion random-float -1
+  ]
+  ask patches with [age = "55+" and opinion = 1000] [
     set opinion random-float 1
   ]
 end
 
-to initial-sex
-  ask patches[
-    set sex "F"
+to initial-age
+  ask patches[ ; Variable dummy para la edad de los agentes
+    set age 1000
   ]
-  ask n-of ( (48 / 100) * (count patches) ) patches [
-   set sex "M"  ; total de 513 male patches, 557 female
+  ask n-of 161 patches with [age = 1000] [
+    set age "17-24"
+  ]
+  ask n-of 342 patches with [age = 1000] [
+   set age "25-34" 
+  ]
+  ask n-of 278 patches with [age = 1000] [
+    set age "40-54"
+  ]
+  ask patches with [age = 1000] [
+    set age "55+"
   ]
 end
-
 
 to go
-  ;; Selección aleatoria de pares para interactuar
+  ;; dos agentes se eligen de manera aleatoria para interactuar
   ask n-of agents-updated-per-tick patches [
+    let x1 opinion 
     let other-patch one-of other patches 
     
-    if influence-type = "positive" [ interact-positive other-patch ]
-    if influence-type = "BC"       [ interact-BC other-patch ]
-    if influence-type = "negative" [ interact-negative other-patch ]
+    let x2 [opinion] of other-patch
+    ;; Influencia positiva. Todos se hacen más iguales
+    if influence-type = "positive"
+    [let x1-new (x1 + learning-rate * (x2 - x1))
+    let x2-new (x2 + learning-rate * (x1 - x2))
+    set opinion x1-new
+      ask other-patch [ set opinion x2-new]]
+    
+    ;; Confianza acotada. Solo te afectan los que se parecen a ti
+    if influence-type = "BC"
+    [if (abs (x1 - x2) < confidence-threshold) [ ; Son suficientemente iguales?
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+    ]
+    
+    ;; Influencia negativa. Opiniones muy opuestas se hacen más extremas
+    if influence-type = "negative"
+    [ if (abs (x1 - x2) < confidence-threshold) [ ; Son suficientemente iguales?
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+      if (abs (x1 - x2) > confidence-threshold)[ ; Son muy diferentes?
+        ifelse (x1 > x2)
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+      ]
+    ]     
   ]
-  
   update-colors
   update-preferences
   tick
    
-  ;; Exportación de datos
   if export-opinions? [
-    if ticks mod 5 = 0 [ 
-      file-open "agents_opinions.csv"
-      register-opinions
-      file-close
-    ] 
+   if ticks mod 5 = 0 [ 
+    file-open "agents_opinions.csv"
+    register-opinions
+    file-close] 
   ]
   
   if ticks = total-ticks [
@@ -95,62 +151,6 @@ to go
     update-preferences
     stop
   ] 
-end
-
-to interact-positive [target]
-  let x1 opinion
-  let x2 [opinion] of target
-  
-  ;; Ambos agentes se acercan entre sí
-  let x1-new (x1 + learning-rate * (x2 - x1))
-  let x2-new (x2 + learning-rate * (x1 - x2))
-  
-  set opinion x1-new
-  ask target [ set opinion x2-new ]
-end
-
-to interact-BC [target]
-  let x1 opinion
-  let x2 [opinion] of target
-  
-  ;; Solo interactúan si están dentro del umbral de confianza
-  if (abs (x1 - x2) < confidence-threshold) [
-    let x1-new (x1 + learning-rate * (x2 - x1))
-    let x2-new (x2 + learning-rate * (x1 - x2))
-    
-    set opinion x1-new
-    ask target [ set opinion x2-new ]
-  ]
-end
-
-to interact-negative [target]
-  let x1 opinion
-  let x2 [opinion] of target
-  let diff abs (x1 - x2)
-  
-  ifelse (diff < confidence-threshold) 
-  [
-    ;; Caso 1: Son similares -> Atracción (igual que BC)
-    let x1-new (x1 + learning-rate * (x2 - x1))
-    let x2-new (x2 + learning-rate * (x1 - x2))
-    set opinion x1-new
-    ask target [ set opinion x2-new ]
-  ]
-  [;; Caso 2: Son muy diferentes?
-    ifelse (x1 > x2)
-        [
-          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
-          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
-          set opinion x1-new
-          ask target [ set opinion x2-new]
-        ]
-        [
-          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
-          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
-          set opinion x1-new
-          ask target [ set opinion x2-new]
-        ]
-  ]
 end
 
 ;; Color de agentes en base a la opinión
@@ -199,37 +199,7 @@ to-report percentage-B
   report (pref-B / count patches) * 100
 end
 
-to-report male-pref-A
-  report (count patches with [opinion > 0 and sex = "M"])
-end
 
-to-report male-percentage-A
-  report male-pref-A / 513 * 100
-end
-
-to-report female-pref-A
-  report (count patches with [opinion > 0 and sex = "F"])
-end
-
-to-report female-percentage-A
-  report female-pref-A / 557 * 100
-end
-
-to-report male-pref-B
-  report (count patches with [opinion < 0 and sex = "M"])
-end
-
-to-report male-percentage-B
-  report male-pref-B / 513 * 100
-end
-
-to-report female-pref-B
-  report (count patches with [opinion < 0 and sex = "F"])
-end
-
-to-report female-percentage-B
-  report female-pref-B / 557 * 100
-end
 
 to-report opinion-ordered-patches
   let ordered-opinions map [ p -> [opinion] of p ] (sort patches)
@@ -282,31 +252,6 @@ set-histogram-num-bars 40
       <pen interval="1.0" mode="0" display="Preference for B" color="-13345367" legend="true">
         <setup></setup>
         <update>plot (pref-B / count patches) * 100</update>
-      </pen>
-    </plot>
-    <plot x="524" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of men" y="296" xMin="0.0" height="175" legend="false" xMax="260.0" yMin="0.0" width="230" xAxis="Number of days" display="Preference for males">
-      <setup></setup>
-      <update></update>
-      <pen interval="1.0" mode="0" display="Option A" color="-2674135" legend="true">
-        <setup>plot male-percentage-A</setup>
-        <update>plot male-percentage-A
-</update>
-      </pen>
-      <pen interval="1.0" mode="0" display="Option B" color="-13345367" legend="true">
-        <setup>plot male-percentage-B</setup>
-        <update>plot male-percentage-B</update>
-      </pen>
-    </plot>
-    <plot x="761" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of women" y="295" xMin="0.0" height="175" legend="false" xMax="260.0" yMin="0.0" width="230" xAxis="Number of days" display="Preference for females">
-      <setup></setup>
-      <update></update>
-      <pen interval="1.0" mode="0" display="Option A" color="-2674135" legend="true">
-        <setup>plot female-percentage-A</setup>
-        <update>plot female-percentage-A</update>
-      </pen>
-      <pen interval="1.0" mode="0" display="pen-1" color="-13345367" legend="true">
-        <setup>plot female-percentage-B</setup>
-        <update>plot female-percentage-B</update>
       </pen>
     </plot>
   </widgets>

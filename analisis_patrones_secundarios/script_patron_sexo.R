@@ -244,7 +244,7 @@ evolucion_preferencias_mujer_plot <- ggplot(evolucion_preferencias_mujer,
   scale_y_continuous(limits = c(min(evolucion_preferencias_hombre$porcentaje_votos) - 5, 
                                 max(evolucion_preferencias_hombre$porcentaje_votos) + 10)) +
   labs(
-    title = "Preference Evolution: Men",
+    title = "Preference Evolution: Women",
     subtitle = "Comparison of Option A (red) and Option B (blue) across surveys",
     x = "Survey Period",
     y = "Preference Share (%)",
@@ -259,4 +259,50 @@ evolucion_preferencias_mujer_plot <- ggplot(evolucion_preferencias_mujer,
   )
 print(evolucion_preferencias_mujer_plot)
 ggsave("figures/evolution_preference_share_women.png", plot = evolucion_preferencias_mujer_plot,
+       width = 8, height = 5, dpi = 300)
+
+
+#### Evolucion de preferencia por genero para candidato A ####
+# Ahora hago una grafica diferente, en la que se muestra el cambio de preferencias entre 
+# hombres y mujeres para la opcion A. Es como mezclar la linea roja de las dos graficas 
+# anteriores. Esto permite una mejor comparacion con los resultados de la simulacion,
+# mostrando que el modelo no logra reproducir multiples patrones
+
+evolucion_preferencias_A_genero <- evolucion_preferencias_sexo %>% 
+  filter(preferencia == "Sheinbaum") %>% 
+  mutate(preferencia = fct_recode(preferencia, "A" = "Sheinbaum"))
+
+# Agrego el cambio general para comparar 
+
+
+
+evolucion_preferencias_A_plot <- ggplot(evolucion_preferencia_A_genero, 
+                                            aes(x = encuesta, y = porcentaje_votos, 
+                                                color = sexo, group = sexo)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 4) +
+  geom_text(aes(label = paste0(round(porcentaje_votos, 1), "%")), 
+            vjust = -1.8, size = 4, fontface = "bold", show.legend = FALSE) +
+  scale_color_manual(
+    values = c("Hombre" = "orange3", "Mujer" = "purple3"),
+    labels = c("Hombre" = "Men", "Mujer" = "Women")
+  ) +
+  scale_y_continuous(limits = c(min(evolucion_preferencias_A_genero$porcentaje_votos) - 1,
+                                max(evolucion_preferencias_A_genero$porcentaje_votos) + 1)) +
+  labs(
+    title = "Preference change for option A by gender",
+    subtitle = "Comparison of preference for A by men (orange) and women (purple) across surveys",
+    x = "Survey Period",
+    y = "Preference Share (%)",
+    color = "Legend"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "grey40"),
+    legend.position = "bottom",
+    axis.title = element_text(face = "bold")
+  )
+print(evolucion_preferencias_A_plot)
+ggsave("figures/evolution_preference_share_A_gender.png", plot = evolucion_preferencias_A_plot,
        width = 8, height = 5, dpi = 300)

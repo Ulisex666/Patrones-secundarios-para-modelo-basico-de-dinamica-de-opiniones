@@ -274,6 +274,8 @@ evolucion_opcion_a_plot <- ggplot(evolucion_opcion_a, aes(x = encuesta,
   theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
         legend.position = "bottom")
 print(evolucion_opcion_a_plot)
+ggsave("figures/evolution_preference_share_A_age.png", plot = evolucion_opcion_a_plot,
+       width = 8, height = 5, dpi = 300)
 
 
 evolucion_opcion_b <- evolucion_preferencias_edad %>% filter(preferencia == "Xochitl")
@@ -301,3 +303,5 @@ evolucion_opcion_b_plot <- ggplot(evolucion_opcion_b, aes(x = encuesta,
   theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
         legend.position = "bottom")
 print(evolucion_opcion_b_plot)
+ggsave("figures/evolution_preference_share_B_age.png", plot = evolucion_opcion_b_plot,
+       width = 8, height = 5, dpi = 300)
